@@ -1,0 +1,7 @@
+from datasets.cwru import CWRU
+from datasets.uored import UORED
+from datasets.hust import Hust
+from datasets.paderborn import Paderborn
+
+if __name__ == '__main__':
+    Paderborn().download()
