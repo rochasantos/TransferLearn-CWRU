@@ -22,7 +22,7 @@ class BaseDataset:
     
     def download(self):
         """
-        Download files from CWRU website.
+        Download files from datasets website.
         """
         url = self.url
         dirname = self.rawfilesdir
