@@ -1,7 +1,7 @@
 import os
 import urllib.request
 import shutil
-from pyunpack import Archive
+import rarfile
 
 from utils.display import display_progress_bar
 
@@ -64,52 +64,91 @@ def download_file(url, dirname, url_suffix, filename):
         download_file(url, dirname, url_suffix, filename)
 
 
-def extract_rar(dirname, dir_rar, bearing):
+def extract_rar(dirname, rar_path):
     """
-    Extracts files from a .rar archive to a specified directory using the pyunpack library.
+    Extracts files from a .rar archive and displays the progress of extraction.
 
     Parameters:
-    - dirname (str): Base directory where the files will be extracted.
-    - dir_rar (str): Subdirectory where the .rar archive is located.
-    - bearing (str): Name of the bearing archive to be extracted (without extension).
+    dirname (str): The base directory where the extracted files will be stored.
+    rar_path (str): The full path to the .rar archive to be extracted.
 
     Example:
-    extract_rar('./data', 'raw', 'bearing_01')
+    extract_rar('./data', './data/raw/bearing_01.rar')
     """
-    print("\nExtracting Bearing Data:", bearing)
-    dir_bearing_rar = os.path.join(dirname, dir_rar, bearing + ".rar")
-    dir_bearing_data = os.path.join(dirname, bearing)
-
-    # Check if the directory already exists, and if so, calculate the number of files
+    
+    # Print a message indicating which archive is being extracted
+    print("\nExtracting Bearing Data:", os.path.basename(rar_path))
+    
+    # Define the path to the .rar file and the target directory for extraction
+    dir_bearing_rar = rar_path  # Full path to the .rar file
+    dir_bearing_data = os.path.splitext(rar_path)[0]  # Directory with the same name as the .rar file, without the extension
+    
+    # If the directory for extracted files does not exist, create it and proceed with extraction
     if not os.path.exists(dir_bearing_data):
-        os.makedirs(dir_bearing_data)
-        try:
-            # Extract the .rar file to the target directory
-            Archive(dir_bearing_rar).extractall(dir_bearing_data)
-
-            # Count the number of extracted files
-            extracted_files_qnt = len([name for name in os.listdir(dir_bearing_data)
-                                       if os.path.isfile(os.path.join(dir_bearing_data, name))])
-            
-            # Print success message
-            print(f"{extracted_files_qnt} files successfully extracted to {dir_bearing_data}")
-        except Exception as e:
-            print(f"Error extracting {bearing}: {str(e)}")
+        os.makedirs(dir_bearing_data)  # Create directory for the extracted files
+        file_name = dir_bearing_rar  # Path to the .rar file
+        
+        # Open the .rar file using the rarfile library
+        rf = rarfile.RarFile(file_name)
+        total_files = len(rf.namelist())  # Get the total number of files in the .rar archive
+        
+        # Extract each file from the archive and display the extraction progress
+        with rarfile.RarFile(file_name) as rf:
+            for i, member in enumerate(rf.infolist(), 1):
+                rf.extract(member, path=dirname)  # Extract the current file to the target directory
+                # Update and display the progress of the extraction
+                done = int(50 * i / total_files)
+                print(f"\r[{'=' * done}{' ' * (50-done)}] {i}/{total_files} files extracted", end='')
+        
+        # Count the number of files that have been extracted into the target directory
+        extracted_files_qnt = len([name for name in os.listdir(dir_bearing_data)
+                                   if os.path.isfile(os.path.join(dir_bearing_data, name))])
     else:
-        # If directory already exists, count the number of files
+        # If the directory already exists, count the files already present
         extracted_files_qnt = len([name for name in os.listdir(dir_bearing_data)
                                    if os.path.isfile(os.path.join(dir_bearing_data, name))])
     
-    # Check if the number of files in the .rar matches the number of extracted files
-    try:
-        archive = Archive(dir_bearing_rar)
-        rar_files_qnt = len(archive.getnames())
-    except Exception as e:
-        print(f"Error reading RAR file: {str(e)}")
-        rar_files_qnt = 0
-
-    # If the number of files doesn't match, remove the directory and retry extraction
-    if rar_files_qnt != extracted_files_qnt:
-        shutil.rmtree(dir_bearing_data)
+    # Reopen the .rar file to verify the number of files inside the archive
+    rf = rarfile.RarFile(dir_bearing_rar)
+    rar_files_qnt = len(rf.namelist())  # Get the total number of files in the .rar archive
+    
+    # Compare the number of files in the archive with the number of files extracted
+    if rar_files_qnt != extracted_files_qnt + 1:
+        # If the number of files does not match, delete the extracted directory and retry extraction
+        shutil.rmtree(dir_bearing_data)  # Remove the incomplete extraction directory
         print("Extracted Files Incorrect. Extracting Again.")
-        extract_rar(dirname, dir_rar, bearing)
+        extract_rar(dirname, rar_path)  # Retry the extraction process
+
+
+def remove_rar_files(directory):
+    """
+    rRemoves all .rar files in the specified directory.
+
+    Parameters:
+    directory (str): The path to the directory where .rar files will be removed.
+
+    Example:
+    remove_rar_files('./data/raw')
+    """
+    
+    # Check if the provided directory exists
+    if not os.path.exists(directory):
+        print(f"Directory {directory} does not exist.")
+        return
+    
+    # Iterate over all the files in the directory
+    for file_name in os.listdir(directory):
+        # Create the full path of the file
+        file_path = os.path.join(directory, file_name)
+        
+        # Check if the file is a .rar file and if it is a file (not a directory)
+        if file_name.endswith('.rar') and os.path.isfile(file_path):
+            try:
+                # Remove the .rar file
+                os.remove(file_path)
+                print(f"Deleted: {file_name}")
+            except Exception as e:
+                # Handle any exception that occurs during deletion
+                print(f"Error deleting {file_name}: {str(e)}")
+    
+    print("Finished deleting .rar files.")
