@@ -1,7 +1,11 @@
 env
-data/raw/cwru/*.mat
-data/raw/paderborn/**/*.mat
-data/raw/paderborn/**/*.pdf
-data/processed/cwru_spectrograms/**/*.png
 
 __pycache__
+
+data/raw/**/*.mat
+data/raw/**/**/*.mat
+data/raw/**/**/*.pdf
+
+data/processed/**/*.png
+data/processed/**/**/*.png
+
