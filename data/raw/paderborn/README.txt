@@ -1,0 +1,1 @@
+Where the accelerometer data will be saved for the Paderborn dataset.
