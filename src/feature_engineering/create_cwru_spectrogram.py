@@ -5,6 +5,8 @@ from scipy import signal
 import scipy.io
 import re
 
+from src.feature_engineering.compute_spectrogram import compute_and_save_spectrogram
+
 
 def _extract_data(filepath, acquisition_maxsize=12000*2):
     """
@@ -40,7 +42,7 @@ def _extract_data(filepath, acquisition_maxsize=12000*2):
                 return matlab_file[key]
 
 
-def generate_spectrogram(input_dir, output_dir, sample_rate=12000, overlap=0, verbose=False):
+def generate_cwru_spectrogram(input_dir, output_dir, sample_rate=12000, overlap=0):
     """
     Generates and saves spectrograms from raw data stored in .mat files.
     The window size is set to represent 1 second of data in the time domain.
@@ -56,7 +58,7 @@ def generate_spectrogram(input_dir, output_dir, sample_rate=12000, overlap=0, ve
     
     # Define parameters for spectrogram computation
     fs = sample_rate  # Sampling frequency
-    nperseg = window_size  # Number of samples per segment (1 second)
+    nperseg = 1024  # segments for the image
     noverlap = overlap  # Overlap between segments
 
     # Track progress across all files
@@ -95,10 +97,8 @@ def generate_spectrogram(input_dir, output_dir, sample_rate=12000, overlap=0, ve
             
             # Extract the data from the .mat file using the _extract_data function
             data = _extract_data(input_path)
-            not verbose or print(f"Processing file {file_count}/{total_files}: {filename}, data shape: {data.shape}")
-            
+
             # Compute and save spectrograms for 1-second segments of the data
-            num_segments = len(data) // window_size  # Number of 1-second segments in the data
             for i in range(0, len(data) - window_size + 1, window_size):  # Process 1-second intervals
                 # Save the spectrogram image to the specified output directory
                 output_filename = os.path.join(output_dir, folder_name, spec_filename + '_{}.png'.format(int(i/sample_rate)))
@@ -107,27 +107,7 @@ def generate_spectrogram(input_dir, output_dir, sample_rate=12000, overlap=0, ve
                     continue
 
                 segment = data[i:i + window_size, 0]  # Extract a 1-second segment
-                
-                # Compute the Short-Time Fourier Transform (STFT) to get the spectrogram
-                f, t, Sxx = signal.stft(segment, fs=sample_rate, nperseg=1024)
-                
-                # Plot the spectrogram using matplotlib
-                fig = plt.figure(figsize=(8, 6))
-                plt.imshow(np.fliplr(abs(Sxx).T).T, cmap='viridis', aspect='auto',
-                           extent=[t.min(), t.max(), f.min(), f.max()])
-                plt.ylabel('Frequency [kHz]')
-                plt.xlabel('Number of Samples')
-                plt.axis('off')  # Turn off axis labels and ticks for the spectrogram
-                
-                
-                plt.savefig(output_filename, bbox_inches='tight', pad_inches=0)
-                plt.close(fig)  # Close the figure to free up memory
-                
-                # Print progress for each segment
-                segment_num = int(i / window_size) + 1
-                not verbose or print(r"  Segment {segment_num}/{num_segments} processed")
-
+                compute_and_save_spectrogram(segment, output_filename, fs, nperseg, noverlap)
+                                
     # Print a completion message after all spectrograms have been generated
     print('All files processed. Complete!')
-
-

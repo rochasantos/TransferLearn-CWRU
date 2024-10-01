@@ -4,7 +4,7 @@ import scipy.io
 
 from src.feature_engineering.compute_spectrogram import compute_and_save_spectrogram
 
-def _extract_data(filepath, acquisition_maxsize=42000):
+def _extract_data(filepath, acquisition_maxsize=51200):
     """
     Extracts data from a MATLAB .mat file for a specific accelerometer position.
 
@@ -16,14 +16,13 @@ def _extract_data(filepath, acquisition_maxsize=42000):
     - np.array: Extracted accelerometer data.
     """
     matlab_file = scipy.io.loadmat(filepath)
-    key = os.path.basename(filepath).split('.')[0]
     if acquisition_maxsize:
-        return matlab_file[key][:, 0][:acquisition_maxsize]
+        return matlab_file['data'][:, 0][:acquisition_maxsize]
     else:
-        return matlab_file[key][:, 0]
+        return matlab_file['data'][:, 0]
 
 
-def generate_spectrogram(input_dir, output_dir, sample_rate=42000, nperseg=1024, overlap=0):
+def generate_spectrogram(input_dir, output_dir, sample_rate=51200, nperseg=1024, overlap=0):
     """
     Generates and saves spectrograms from raw data stored in .mat files.
     The window size is set to represent 1 second of data in the time domain.

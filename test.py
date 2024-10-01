@@ -3,9 +3,7 @@ from datasets.paderborn import Paderborn
 from datasets.hust import Hust
 from datasets.uored import UORED
 
-
-if __name__ == '__main__':
-
+def test_download():
     """
     Download and Extract files
     """
@@ -15,11 +13,35 @@ if __name__ == '__main__':
     # Hust().download()    
     # UORED().download()    
 
+def test_create_spectrograms():
     """
     Create Spectrograms
     """
-    from src.feature_engineering.create_cwru_spectrogram import generate_spectrogram
-    generate_spectrogram(
+    from src.feature_engineering.create_cwru_spectrogram import generate_cwru_spectrogram
+    generate_cwru_spectrogram(
         input_dir='data/raw/cwru', 
         output_dir='data/processed/cwru_spectrograms',
         sample_rate=12000)
+
+    # generate_spectrogram(
+    #     input_dir='data/raw/uored',
+    #     output_dir='data/processed/uored_spectrograms',
+    #     sample_rate=42000)
+
+    # from src.feature_engineering.create_hust_spectrogram import generate_spectrogram
+    # generate_spectrogram(
+    #     input_dir='data/raw/hust',
+    #     output_dir='data/processed/hust_spectrograms',
+    #     sample_rate=51200)
+    
+def main():
+    test_create_spectrograms()
+    # test_download()
+
+if __name__ == '__main__':
+    main()
+    
+
+    
+    
+
