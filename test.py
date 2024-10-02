@@ -11,7 +11,7 @@ def test_download():
     # Paderborn().download()    
     # Paderborn().extract_rar(remove_rarfile=True)
     # Hust().download()    
-    # UORED().download()    
+    UORED().download()    
 
 def test_create_spectrograms():
     """
@@ -40,8 +40,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    
-
-    
-    
-

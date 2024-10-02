@@ -61,14 +61,9 @@ def generate_cwru_spectrogram(input_dir, output_dir, sample_rate=12000, overlap=
     nperseg = 1024  # segments for the image
     noverlap = overlap  # Overlap between segments
 
-    # Track progress across all files
-    total_files = len([f for f in os.listdir(input_dir) if f.endswith('.mat')])
-    file_count = 0
-
     # Loop through all .mat files in the input directory
     for filename in os.listdir(input_dir):
         if filename.endswith('.mat'):
-            file_count += 1  # Update the file counter
             # Map the severity level (extracted from filename) to a specific directory name
             severity = filename[2:5]
             map_out_dirname = {
@@ -109,5 +104,19 @@ def generate_cwru_spectrogram(input_dir, output_dir, sample_rate=12000, overlap=
                 segment = data[i:i + window_size, 0]  # Extract a 1-second segment
                 compute_and_save_spectrogram(segment, output_filename, fs, nperseg, noverlap)
                                 
+                # Compute the Short-Time Fourier Transform (STFT) to get the spectrogram
+                f, t, Sxx = signal.stft(segment, fs=fs, nperseg=nperseg, noverlap=noverlap)
+                
+                # Compute the spectrogram
+                fig = plt.figure(figsize=(8, 6))
+                plt.imshow(np.fliplr(abs(Sxx).T).T, cmap='viridis', aspect='auto',
+                           extent=[t.min(), t.max(), f.min(), f.max()])
+                plt.ylabel('Frequency [kHz]')
+                plt.xlabel('Number of Samples')
+                plt.axis('off')  # Turn off axis labels and ticks for the spectrogram
+                
+                plt.savefig(output_filename, bbox_inches='tight', pad_inches=0)
+                plt.close(fig)  # Close the figure to free up memory
+                
     # Print a completion message after all spectrograms have been generated
     print('All files processed. Complete!')
