@@ -20,24 +20,16 @@ class DatasetModelFactory:
 
 fct = DatasetModelFactory()
 
-def test_download():
-    """
-    Download and Extract files
-    """
-    # CWRU().download()    
-    # Paderborn().download()    
-    # Paderborn().extract_rar(remove_rarfile=True)
-    # Hust().download()    
-
-def test_create_spectrograms(dataset_name):
-    """
-    Create Spectrograms
-    """
+"""
+Download and Extract files
+"""
+def test_download(dataset_name):
     dataset = fct.create_dataset(dataset_name)
-    dataset.load_signal()
-    data, label, fs, specdir = dataset.data, dataset.label, dataset.sample_rate, dataset.spectdir
-    generate_spectrogram(data, label, fs, specdir)
+    dataset.download()    
 
+"""
+Load Signal
+"""
 def test_load_signal_with_acquisition_maxsize_none(dataset_name):
     dataset = fct.create_dataset(dataset_name)    
     dataset.load_signal()
@@ -60,14 +52,29 @@ def test_load_signal_with_filter_file(dataset_name):
     print('** test_load_signal_with_acquisition_maxsize_64000_x_3_with_filter')
     print(f'- data.shape: {dataset.data.shape}, label.shape: {dataset.label.shape}\n')
 
+"""
+Create Spectrograms
+"""
+def test_create_spectrograms(dataset_name):
+    dataset = fct.create_dataset(dataset_name)
+    dataset.load_signal()
+    data, label, fs, specdir = dataset.data, dataset.label, dataset.sample_rate, dataset.spectdir
+    generate_spectrogram(data, label, fs, specdir)
+
 
 def test():
     dataset_name = 'paderborn'
+    # download
+    test_download(dataset_name)
+
+    # load signal
     test_load_signal_with_acquisition_maxsize_none(dataset_name)
     test_load_signal_with_acquisition_maxsize_differ_none(dataset_name)
     test_load_signal_with_filter_file(dataset_name)
 
+    # generate spectrograms
     test_create_spectrograms(dataset_name)
+
 
 if __name__ == '__main__':
     test()
