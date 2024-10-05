@@ -1,23 +1,22 @@
 import os
+import numpy as np
+import re
+import scipy.io
 from datasets.base_dataset import BaseDataset
 from utils.download_extract import extract_rar, remove_rar_files
 
-def get_list_of_bearings(n_acquisitions, bearing_names):
-    settings_files = ["N15_M07_F10_", "N09_M07_F10_", "N15_M01_F10_", "N15_M07_F04_"]
-    list_of_bearings = []
-    for bearing in bearing_names:
-        if bearing[1] == '0':
-            tp = "Normal_"
-        elif bearing[1] == 'A':
-            tp = "OR_"
-        else:
-            tp = "IR_"
-        for idx, setting in enumerate(settings_files):
-            for i in range(1, n_acquisitions + 1):
-                key = tp + bearing + "_" + str(idx) + "_" + str(i)
-                list_of_bearings.append((key, os.path.join(bearing, setting + bearing +
-                                                "_" + str(i) + ".mat")))
-    return list_of_bearings
+def _extract_label(filepath):
+    tag = filepath.split('_')[-2]
+    if tag == '0':
+        tp = "N_"
+    elif tag == 'A':
+        tp = "O_"
+    else:
+        tp = "I_"
+    
+    filename = os.path.basename(filepath).split('.')[0]
+    return tp+filename
+
 
 class Paderborn(BaseDataset):    
     
@@ -29,7 +28,9 @@ class Paderborn(BaseDataset):
         ]
 
     def __init__(self):
-        super().__init__(rawfilesdir = "data/raw/paderborn", 
+        super().__init__(rawfilesdir = "data/raw/paderborn",
+                         spectdir="data/processed/paderborn_spectrograms",
+                         sample_rate=64000,
                          url = "https://groups.uni-paderborn.de/kat/BearingDataCenter/")
 
     def extract_rar(self, remove_rarfile=False):
@@ -40,6 +41,44 @@ class Paderborn(BaseDataset):
                 extract_rar(dirname, rar_path)
         if remove_rarfile:
             remove_rar_files(self.rawfilesdir)
-    
+
+    def load_signal(self, acquisition_maxsize=None, regex_filter=r'.*N09_M07_F10_K001_1\.mat$'):
+        """
+        Extracts data from a MATLAB .mat file for a specific accelerometer position.
+
+        Parameters:
+        - filepath (str): The path to the .mat file.
+        - acquisition_maxsize (int): Maximum number of samples to extract (default: 12000).
+        
+        Returns:
+        - np.array: Extracted accelerometer data.
+        """
+        
+        regex = re.compile(regex_filter)
+
+        signal = []
+        label = []
+        for root, dirs, files in os.walk(self.rawfilesdir):
+            for file in files:
+                filepath = os.path.join(root, file)
+               
+                if not regex.search(file):
+                    continue
+
+                matlab_file = scipy.io.loadmat(filepath)
+                key = os.path.basename(filepath).split('.')[0]
+                data_raw = matlab_file[key]['Y'][0][0][0][6][2][0, :]
+                
+                if acquisition_maxsize:
+                    signal.append(data_raw[:acquisition_maxsize])
+                else:
+                    signal.append(data_raw)
+                
+                label.append(_extract_label(filepath))
+
+        self._data = np.array(signal)
+        self._label = np.array(label)
+        
+
     def __str__(self):
         return "Paderborn"

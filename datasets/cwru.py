@@ -1,4 +1,9 @@
+import scipy.io
+import numpy as np
+import os
+import re
 from datasets.base_dataset import BaseDataset
+
 
 class CWRU(BaseDataset):    
     
@@ -49,8 +54,54 @@ class CWRU(BaseDataset):
 
 
     def __init__(self):
-        super().__init__(rawfilesdir = "data/raw/cwru", 
+        super().__init__(rawfilesdir = "data/raw/cwru",
+                         spectdir="data/processed/cwru_spectrograms",
+                         sample_rate=12000,
                          url = "https://engineering.case.edu/sites/default/files/")
+        
+        
     
+    
+    def load_signal(self, acquisition_maxsize=None, regex_filter=r'B\.007\.DE_0&12000\.mat$'):
+        
+        regex = re.compile(regex_filter)
+
+        signal = []
+        label = []
+        for root, dirs, files in os.walk(self.rawfilesdir):
+            for file in files:
+                filepath = os.path.join(root, file)
+               
+                if not regex.search(file):
+                    continue
+
+                # Load the .mat file into a dictionary
+                matlab_file = scipy.io.loadmat(filepath)
+                
+                # Find keys that match the naming convention of time-domain data (e.g., 'X123_DE_time')
+                keys = re.findall(r'X\d{3}_[A-Z]{2}_time', str(matlab_file.keys()))
+                
+                # Define the accelerometer positions of interest ('DE' for Drive End)
+                positions = [ 'DE' ]  # Option to add more positions such as 'FE' for Fan End
+                
+                # Extract the bearing position from the filename based on its characters
+                filename = os.path.basename(filepath)
+                bearing_position = positions if filename[6:8] == 'NN' else [filename[6:8]]
+                
+                # Loop through the matching keys and return the data corresponding to the bearing position
+                for key in keys:
+                    if key[-7:-5] in bearing_position:
+                        # Return the data limited by acquisition_maxsize or return the full data if no limit
+                        if acquisition_maxsize:
+                            signal.append((np.squeeze(matlab_file[key][:acquisition_maxsize])))
+                        else:
+                            signal.append(np.squeeze(matlab_file[key]))
+                        label.append(filename.split('.')[0])
+
+
+        self._data = np.array(signal)
+        self._label = np.array(label)
+
+
     def __str__(self):
         return "CWRU"
