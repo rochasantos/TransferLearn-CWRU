@@ -6,7 +6,7 @@ import rarfile
 from utils.display import display_progress_bar
 
 
-def download_file(url, dirname, url_suffix, filename):
+def download_file(url, url_suffix, dirname, filename):
     """
     Downloads a file from the specified URL and displays a progress bar during the download.
     

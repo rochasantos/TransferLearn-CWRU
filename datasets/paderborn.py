@@ -19,21 +19,22 @@ def _extract_label(filepath):
 
 
 class Paderborn(BaseDataset):    
-    
+
+    def __init__(self, debug=False):
+        super().__init__(rawfilesdir = "data/raw/paderborn",
+                         spectdir="data/processed/paderborn_spectrograms",
+                         sample_rate=64000,
+                         url = "https://groups.uni-paderborn.de/kat/BearingDataCenter/",
+                         debug=debug)
+
     def list_of_bearings(self):
-        return [
+        return [("K001.rar", "K001.rar")] if self.debug else [
         ("K001.rar", "K001.rar"), ("K002.rar", "K002.rar"), ("K003.rar", "K003.rar"), ("K004.rar", "K004.rar"), ("K005.rar", "K005.rar"), ("K006.rar", "K006.rar"), 
         ("KA01.rar", "KA01.rar"), ("KA03.rar", "KA03.rar"), ("KA04.rar", "KA04.rar"), ("KA05.rar", "KA05.rar"), ("KA06.rar", "KA06.rar"), ("KA07.rar", "KA07.rar"), ("KA09.rar", "KA09.rar"), ("KA15.rar", "KA15.rar"), ("KA16.rar", "KA16.rar"), ("KA22.rar", "KA22.rar"), ("KA30.rar", "KA30.rar"), 
         ("KI01.rar", "KI01.rar"), ("KI03.rar", "KI03.rar"), ("KI04.rar", "KI04.rar"), ("KI05.rar", "KI05.rar"), ("KI07.rar", "KI07.rar"), ("KI08.rar", "KI08.rar"), ("KI14.rar", "KI14.rar"), ("KI16.rar", "KI16.rar"), ("KI17.rar", "KI17.rar"), ("KI18.rar", "KI18.rar"), ("KI21.rar", "KI21.rar"), 
         ]
-
-    def __init__(self):
-        super().__init__(rawfilesdir = "data/raw/paderborn",
-                         spectdir="data/processed/paderborn_spectrograms",
-                         sample_rate=64000,
-                         url = "https://groups.uni-paderborn.de/kat/BearingDataCenter/")
-
-    def extract_rar(self, remove_rarfile=False):
+    
+    def _extract_rar(self, remove_rarfile=False):
         for bearing in self.list_of_bearings():
             rar_path = os.path.join(self.rawfilesdir, bearing[1])
             dirname = self.rawfilesdir
@@ -41,6 +42,10 @@ class Paderborn(BaseDataset):
                 extract_rar(dirname, rar_path)
         if remove_rarfile:
             remove_rar_files(self.rawfilesdir)
+
+    def download(self):
+        super().download()
+        self._extract_rar(remove_rarfile=True)
 
     def load_signal(self, acquisition_maxsize=None, regex_filter=r'.*N09_M07_F10_K001_1\.mat$'):
         """

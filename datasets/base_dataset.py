@@ -6,7 +6,7 @@ from utils.download_extract import download_file
 
 class BaseDataset:
     
-    def __init__(self, rawfilesdir, spectdir, sample_rate, url):
+    def __init__(self, rawfilesdir, spectdir, sample_rate, url, debug):
         """
         Base class for all datasets. 
         Defines attributes and a download function to be inherited by specific datasets.
@@ -21,6 +21,7 @@ class BaseDataset:
         self._url = url  # Base URL for downloading the files
         self._data = []
         self._label = []
+        self.debug = debug
 
         # Check if the raw files directory exists, if not, create it
         if not os.path.exists(self._rawfilesdir):
@@ -38,8 +39,13 @@ class BaseDataset:
         print(f"Stating download of {self} dataset.")
         bearings = self.list_of_bearings()
         for filename, url_suffix in bearings:
-            download_file(url, dirname, url_suffix, filename)
+            if not os.path.exists(os.path.join(dirname, filename)):
+                download_file(url, url_suffix, dirname, filename)
         print("Download finished.")
+
+    @property
+    def url(self):
+        return self._url
 
     @property
     def data(self):

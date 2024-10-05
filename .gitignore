@@ -6,6 +6,10 @@ data/raw/**/*.mat
 data/raw/**/**/*.mat
 data/raw/**/**/*.pdf
 
+data/raw_test/**/*.mat
+data/raw_test/**/**/*.mat
+data/raw_test/**/**/*.pdf
+
 data/processed/**/*.png
 data/processed/**/**/*.png
 

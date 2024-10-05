@@ -8,13 +8,13 @@ class DatasetModelFactory:
     @staticmethod
     def create_dataset(dataset_name):
         if dataset_name == 'paderborn':
-            return Paderborn()
+            return Paderborn(debug=True)
         elif dataset_name == "cwru":
-            return CWRU()
+            return CWRU(debug=True)
         elif dataset_name == "hust":
-            return Hust()
+            return Hust(debug=True)
         elif dataset_name == "uored":
-            return UORED()
+            return UORED(debug=True)
         else:
             raise ValueError("Unknown dataset.")
 
@@ -25,7 +25,8 @@ Download and Extract files
 """
 def test_download(dataset_name):
     dataset = fct.create_dataset(dataset_name)
-    dataset.download()    
+    dataset._rawfilesdir = f'data/raw_test/{dataset}'
+    dataset.download()
 
 """
 Load Signal
@@ -36,7 +37,7 @@ def test_load_signal_with_acquisition_maxsize_none(dataset_name):
     print('** test_load_signal_with_acquisition_maxsize_none')
     print(f'- data.shape: {dataset.data.shape}, label.shape: {dataset.label.shape}\n')
 
-def test_load_signal_with_acquisition_maxsize_differ_none(dataset_name):
+def test_load_signal_with_acquisition_maxsize_64000(dataset_name):
     dataset = fct.create_dataset(dataset_name)    
     dataset.load_signal(acquisition_maxsize=64000)
     print('** test_load_signal_with_acquisition_maxsize_64000')
@@ -48,7 +49,7 @@ def test_load_signal_with_filter_file(dataset_name):
     elif dataset_name == 'cwru':
         regex = r'B\.007\.DE_[01]&12000.mat'
     dataset = fct.create_dataset(dataset_name) 
-    dataset.load_signal(acquisition_maxsize=64000, regex_filter=regex)
+    dataset.load_signal(regex_filter=regex)
     print('** test_load_signal_with_acquisition_maxsize_64000_x_3_with_filter')
     print(f'- data.shape: {dataset.data.shape}, label.shape: {dataset.label.shape}\n')
 
@@ -63,18 +64,18 @@ def test_create_spectrograms(dataset_name):
 
 
 def test():
-    dataset_name = 'paderborn'
+    dataset_name = 'uored'
     # download
     test_download(dataset_name)
-
+"""
     # load signal
     test_load_signal_with_acquisition_maxsize_none(dataset_name)
-    test_load_signal_with_acquisition_maxsize_differ_none(dataset_name)
+    test_load_signal_with_acquisition_maxsize_64000(dataset_name)
     test_load_signal_with_filter_file(dataset_name)
 
     # generate spectrograms
     test_create_spectrograms(dataset_name)
-
+"""
 
 if __name__ == '__main__':
     test()
