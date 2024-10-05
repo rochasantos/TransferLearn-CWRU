@@ -2,41 +2,80 @@ from datasets.cwru import CWRU
 from datasets.paderborn import Paderborn
 from datasets.hust import Hust
 from datasets.uored import UORED
+from src.feature_engineering.create_spectrogram import generate_spectrogram
 
-def test_download():
-    """
-    Download and Extract files
-    """
-    # CWRU().download()    
-    # Paderborn().download()    
-    # Paderborn().extract_rar(remove_rarfile=True)
-    # Hust().download()    
-    UORED().download()    
+class DatasetModelFactory:
+    @staticmethod
+    def create_dataset(dataset_name):
+        if dataset_name == 'paderborn':
+            return Paderborn(debug=True)
+        elif dataset_name == "cwru":
+            return CWRU(debug=True)
+        elif dataset_name == "hust":
+            return Hust(debug=True)
+        elif dataset_name == "uored":
+            return UORED(debug=True)
+        else:
+            raise ValueError("Unknown dataset.")
 
-def test_create_spectrograms():
-    """
-    Create Spectrograms
-    """
-    from src.feature_engineering.create_cwru_spectrogram import generate_cwru_spectrogram
-    generate_cwru_spectrogram(
-        input_dir='data/raw/cwru', 
-        output_dir='data/processed/cwru_spectrograms',
-        sample_rate=12000)
+fct = DatasetModelFactory()
 
-    # generate_spectrogram(
-    #     input_dir='data/raw/uored',
-    #     output_dir='data/processed/uored_spectrograms',
-    #     sample_rate=42000)
+"""
+Download and Extract files
+"""
+def test_download(dataset_name):
+    dataset = fct.create_dataset(dataset_name)
+    dataset._rawfilesdir = f'data/raw_test/{dataset}'
+    dataset.download()
 
-    # from src.feature_engineering.create_hust_spectrogram import generate_spectrogram
-    # generate_spectrogram(
-    #     input_dir='data/raw/hust',
-    #     output_dir='data/processed/hust_spectrograms',
-    #     sample_rate=51200)
-    
-def main():
-    test_create_spectrograms()
-    # test_download()
+"""
+Load Signal
+"""
+def test_load_signal_with_acquisition_maxsize_none(dataset_name):
+    dataset = fct.create_dataset(dataset_name)    
+    dataset.load_signal()
+    print('** test_load_signal_with_acquisition_maxsize_none')
+    print(f'- data.shape: {dataset.data.shape}, label.shape: {dataset.label.shape}\n')
+
+def test_load_signal_with_acquisition_maxsize_64000(dataset_name):
+    dataset = fct.create_dataset(dataset_name)    
+    dataset.load_signal(acquisition_maxsize=64000)
+    print('** test_load_signal_with_acquisition_maxsize_64000')
+    print(f'- data.shape: {dataset.data.shape}, label.shape: {dataset.label.shape}\n')
+
+def test_load_signal_with_filter_file(dataset_name):
+    if dataset_name == 'paderborn':
+        regex = r'.*N09_M07_F10_K001_[12]\.mat$'
+    elif dataset_name == 'cwru':
+        regex = r'B\.007\.DE_[01]&12000.mat'
+    dataset = fct.create_dataset(dataset_name) 
+    dataset.load_signal(regex_filter=regex)
+    print('** test_load_signal_with_acquisition_maxsize_64000_x_3_with_filter')
+    print(f'- data.shape: {dataset.data.shape}, label.shape: {dataset.label.shape}\n')
+
+"""
+Create Spectrograms
+"""
+def test_create_spectrograms(dataset_name):
+    dataset = fct.create_dataset(dataset_name)
+    dataset.load_signal()
+    data, label, fs, specdir = dataset.data, dataset.label, dataset.sample_rate, dataset.spectdir
+    generate_spectrogram(data, label, fs, specdir)
+
+
+def test():
+    dataset_name = 'uored'
+    # download
+    test_download(dataset_name)
+"""
+    # load signal
+    test_load_signal_with_acquisition_maxsize_none(dataset_name)
+    test_load_signal_with_acquisition_maxsize_64000(dataset_name)
+    test_load_signal_with_filter_file(dataset_name)
+
+    # generate spectrograms
+    test_create_spectrograms(dataset_name)
+"""
 
 if __name__ == '__main__':
-    main()
+    test()
