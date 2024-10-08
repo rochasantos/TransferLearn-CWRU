@@ -13,3 +13,6 @@ data/raw_test/**/**/*.pdf
 data/processed/**/*.png
 data/processed/**/**/*.png
 
+data/processed_test/**/*.png
+data/processed_test/**/**/*.png
+

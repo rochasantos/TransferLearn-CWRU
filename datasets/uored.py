@@ -1,10 +1,44 @@
+import scipy.io
+import os
+import numpy as np
 from utils.download_extract import download_file
 from datasets.base_dataset import BaseDataset
 
 
 class UORED(BaseDataset):    
+    """
+    UORED_VAFCLS Dataset Class
+
+    This class manages the UORED_VAFCLS bearing dataset used for fault diagnosis.
+    It provides methods for listing bearing files, loading vibration signals, and setting up dataset attributes.
+    This class inherits from BaseDataset the load_signal methods responsible for loading and downloading data.
+    
+    Attributes
+        rawfilesdir (str) : Directory where raw data files are stored.
+        spectdir (str) : Directory where processed spectrograms will be saved.
+        sample_rate (int) : Sampling rate of the vibration data.
+        url (str) : URL for downloading the UORED-VAFCLS dataset.
+        debug (bool) : If True, limits the number of files processed for faster testing.
+
+    Methods
+        list_of_bearings(): Returns a list of tuples with filenames and URL suffixes for downloading vibration data. 
+        _extract_data(): Extracts the vibration signal data from .mat files.
+        __str__(): Returns a string representation of the dataset.
+    """
+    
+    def __init__(self, debug=False):
+        super().__init__(rawfilesdir = "data/raw/uored",
+                         spectdir="data/processed/uored_spectrograms",
+                         sample_rate=42000,
+                         url = "https://prod-dcd-datasets-public-files-eu-west-1.s3.eu-west-1.amazonaws.com/",
+                         debug=debug)
     
     def list_of_bearings(self):
+        """ 
+        Returns: 
+            A list of tuples containing filenames (for naming downloaded files) and URL suffixes 
+            for downloading vibration data.
+        """
         if self.debug:
             return [
             ("H_1_0.mat", "31863372-55f7-4c9c-91a5-4f3c907a85af"),
@@ -77,13 +111,22 @@ class UORED(BaseDataset):
             ("C_20_2.mat", "8e8a485f-6fe9-4439-8f93-743a7ac431ec"),
             ]
 
-    
-    def __init__(self, debug=False):
-        super().__init__(rawfilesdir = "data/raw/uored",
-                         spectdir="data/processed/uored_spectrograms",
-                         sample_rate=42000,
-                         url = "https://prod-dcd-datasets-public-files-eu-west-1.s3.eu-west-1.amazonaws.com/",
-                         debug=debug)
-    
+    def _extract_data(self, filepath):
+        """ Extracts data from a .mat file for bearing fault analysis.
+        Args:
+            filepath (str): The path to the .mat file.
+        Return:
+            tuple: A tuple containing the extracted data and its label.
+        """
+        matlab_file = scipy.io.loadmat(filepath)
+        filename = os.path.basename(filepath)
+        label = filename.split('.')[0]
+        data_squeezed = np.squeeze(matlab_file[label][0])  # removes the dimension corresponding to 
+                                                        # the number of channels, as only a single channel is being used.
+        if self.acquisition_maxsize:
+            return data_squeezed[:self.acquisition_maxsize], label
+        else:
+            return data_squeezed, label
+
     def __str__(self):
         return "UORED"

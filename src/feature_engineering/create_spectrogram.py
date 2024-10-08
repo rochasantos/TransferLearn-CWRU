@@ -36,7 +36,7 @@ def generate_spectrogram(data, label, fs, output_dir, noverlap=0, nperseg = 1024
     # Loop through all .mat files in the input directory
     for sample, spec_filename in zip(data, label):
         # Compute and save spectrograms for 1-second segments of the data
-        for i in range(0, np.size(data) - window_size + 1, window_size):  # Process 1-second intervals
+        for i in range(0, data.shape[1] - window_size + 1, window_size):  # Process 1-second intervals
             # Save the spectrogram image to the specified output directory
             output_file = os.path.join(output_dir, spec_filename + '_{}.png'.format(int(i/fs)))
             

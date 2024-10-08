@@ -4,14 +4,47 @@ import os
 import re
 from datasets.base_dataset import BaseDataset
 
+class CWRU(BaseDataset):
+    """
+    CWRU Dataset Class
 
-class CWRU(BaseDataset):    
+    This class manages the CWRU (Case Western Reserve University) bearing dataset used for fault diagnosis.
+    It provides methods for listing bearing files, loading vibration signals, and setting up dataset attributes.
+    This class inherits from BaseDataset the load_signal methods responsible for loading and downloading data.
     
+    Attributes
+        rawfilesdir (str) : Directory where raw data files are stored.
+        spectdir (str) : Directory where processed spectrograms will be saved.
+        sample_rate (int) : Sampling rate of the vibration data.
+        url (str) : URL for downloading the Paderborn dataset.
+        debug (bool) : If True, limits the number of files processed for faster testing.
+
+    Methods
+        list_of_bearings(): Returns a list of tuples with filenames and URL suffixes for downloading vibration data.
+        _extract_data(): Extracts the vibration signal data from .mat files.
+        __str__(): Returns a string representation of the dataset.
+    """
+
+    def __init__(self, debug=False):
+        super().__init__(rawfilesdir = "data/raw/cwru",
+                         spectdir="data/processed/cwru_spectrograms",
+                         sample_rate=12000,
+                         url = "https://engineering.case.edu/sites/default/files/",
+                         debug=debug)
+
+
     def list_of_bearings(self):
+        """ 
+        Returns: 
+            A list of tuples containing filenames (for naming downloaded files) and URL suffixes 
+            for downloading vibration data.
+        """
         if self.debug:
             return [
-            ("N.000.NN_0&12000.mat","97.mat"), ("I.007.DE_0&48000.mat","109.mat"), ("B.007.DE_0&48000.mat","122.mat"), ("O.007.DE.@6_0&48000.mat","135.mat"),
-            ("I.007.DE_0&12000.mat","105.mat"), ("B.007.DE_0&12000.mat","118.mat"), ("O.007.DE.@6_0&12000.mat","130.mat")] 
+            ("N.000.NN_0&12000.mat","97.mat"), ("I.007.DE_0&48000.mat","109.mat"), 
+            ("B.007.DE_0&48000.mat","122.mat"), ("O.007.DE.@6_0&48000.mat","135.mat"),
+            ("I.007.DE_0&12000.mat","105.mat"), ("B.007.DE_0&12000.mat","118.mat"), 
+            ("O.007.DE.@6_0&12000.mat","130.mat")] 
         else:
             return [
             ("N.000.NN_0&12000.mat","97.mat"),        ("N.000.NN_1&12000.mat","98.mat"),        ("N.000.NN_2&12000.mat","99.mat"),        ("N.000.NN_3&12000.mat","100.mat"),
@@ -55,55 +88,28 @@ class CWRU(BaseDataset):
             ("B.021.FE_0&12000.mat","290.mat"),       ("B.021.FE_1&12000.mat","291.mat"),       ("B.021.FE_2&12000.mat","292.mat"),       ("B.021.FE_3&12000.mat","293.mat"),    
             ("O.021.FE.@6_0&12000.mat","315.mat"),    ("O.021.FE.@3_1&12000.mat","316.mat"),    ("O.021.FE.@3_2&12000.mat","317.mat"),    ("O.021.FE.@3_3&12000.mat","318.mat"),    
             ]
-
-
-    def __init__(self, debug=False):
-        super().__init__(rawfilesdir = "data/raw/cwru",
-                         spectdir="data/processed/cwru_spectrograms",
-                         sample_rate=12000,
-                         url = "https://engineering.case.edu/sites/default/files/",
-                         debug=debug)
     
-    def load_signal(self, acquisition_maxsize=None, regex_filter=r'B\.007\.DE_0&12000\.mat$'):
-        
-        regex = re.compile(regex_filter)
+    def _extract_data(self, filepath):
+        """ Extracts data from a .mat file for bearing fault analysis.
+        Args:
+            filepath (str): The path to the .mat file.
+        Return:
+            tuple: A tuple containing the extracted data and its label.
+        """
+        matlab_file = scipy.io.loadmat(filepath)
+        keys = re.findall(r'X\d{3}_[A-Z]{2}_time', str(matlab_file.keys()))
+        positions = ['DE']  # get data only accelerometer DE 
+        bearing_position = positions if filename[6:8] == 'NN' else [filename[6:8]]
+        filename = os.path.basename(filepath)
+        label = filename.split('.')[0]
+        for key in keys:
+            if key[-7:-5] in bearing_position:
+                data_squeezed = np.squeeze(matlab_file[key])  # removes the dimension corresponding to 
+                                                              # the number of channels, as only a single channel is being used.
+                if self.acquisition_maxsize:
+                    return data_squeezed[:self.acquisition_maxsize], label
+                else:
+                    return data_squeezed, label
 
-        signal = []
-        label = []
-        for root, dirs, files in os.walk(self.rawfilesdir):
-            for file in files:
-                filepath = os.path.join(root, file)
-               
-                if not regex.search(file):
-                    continue
-
-                # Load the .mat file into a dictionary
-                matlab_file = scipy.io.loadmat(filepath)
-                
-                # Find keys that match the naming convention of time-domain data (e.g., 'X123_DE_time')
-                keys = re.findall(r'X\d{3}_[A-Z]{2}_time', str(matlab_file.keys()))
-                
-                # Define the accelerometer positions of interest ('DE' for Drive End)
-                positions = [ 'DE' ]  # Option to add more positions such as 'FE' for Fan End
-                
-                # Extract the bearing position from the filename based on its characters
-                filename = os.path.basename(filepath)
-                bearing_position = positions if filename[6:8] == 'NN' else [filename[6:8]]
-                
-                # Loop through the matching keys and return the data corresponding to the bearing position
-                for key in keys:
-                    if key[-7:-5] in bearing_position:
-                        # Return the data limited by acquisition_maxsize or return the full data if no limit
-                        if acquisition_maxsize:
-                            signal.append((np.squeeze(matlab_file[key][:acquisition_maxsize])))
-                        else:
-                            signal.append(np.squeeze(matlab_file[key]))
-                        label.append(filename.split('.')[0])
-
-
-        self._data = np.array(signal)
-        self._label = np.array(label)
-
-
-    def __str__(self):
+    def __str__(self):        
         return "CWRU"
