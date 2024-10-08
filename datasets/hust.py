@@ -1,8 +1,40 @@
+import numpy as np
+import scipy.io
+import os
 from datasets.base_dataset import BaseDataset
 
 class Hust(BaseDataset):    
+    """
+    Hust Dataset Class
+
+    This class manages the Hust bearing dataset used for fault diagnosis.
+    It provides methods for listing bearing files, loading vibration signals, and setting up dataset attributes.
+    This class inherits from BaseDataset the load_signal methods responsible for loading and downloading data.
     
+    Attributes
+        rawfilesdir (str) : Directory where raw data files are stored.
+        spectdir (str) : Directory where processed spectrograms will be saved.
+        sample_rate (int) : Sampling rate of the vibration data.
+        url (str) : URL for downloading the UORED-VAFCLS dataset.
+        debug (bool) : If True, limits the number of files processed for faster testing.
+
+    Methods
+        list_of_bearings(): Returns a list of tuples with filenames and URL suffixes for downloading vibration data. 
+        _extract_data(): Extracts the vibration signal data from .mat files.
+        __str__(): Returns a string representation of the dataset.
+    """
+
+    def __init__(self, debug=False):
+        super().__init__(rawfilesdir = "data/raw/hust", 
+                         url = "https://prod-dcd-datasets-public-files-eu-west-1.s3.eu-west-1.amazonaws.com/",
+                         spectdir="data/processed/hust_spectrograms",
+                         sample_rate=51200,
+                         debug=debug)
+
     def list_of_bearings(self):
+        """ Returns a list of tuples with filenames (which will be used to name the downloaded files 
+            in the destination directory) and URL suffixes to download vibration data.
+        """
         if self.debug:
             return[
             ("N400.mat", "17f0ca65-1bd5-4f04-9b1a-d7a81af46872"),
@@ -114,13 +146,21 @@ class Hust(BaseDataset):
             ("OB804.mat", "c1d007a6-80ba-423a-ae9b-b1b63f4d7419")
             ]
 
-
-    def __init__(self, debug=False):
-        super().__init__(rawfilesdir = "data/raw/hust", 
-                         url = "https://prod-dcd-datasets-public-files-eu-west-1.s3.eu-west-1.amazonaws.com/",
-                         spectdir="data/processed/hust_spectrograms",
-                         sample_rate=51200,
-                         debug=debug)
+    def _extract_data(self, filepath):
+        """ Extracts data from a .mat file for bearing fault analysis.
+        Args:
+            filepath (str): The path to the .mat file.
+        Return:
+            tuple: A tuple containing the extracted data and its label.
+        """
+        matlab_file = scipy.io.loadmat(filepath)
+        filename = os.path.basename(filepath)
+        label = filename.split('.')[0]                
+        data_squeezed = np.squeeze(matlab_file["data"])
+        if self.acquisition_maxsize:
+            return data_squeezed[:self.acquisition_maxsize], label
+        else:
+            return data_squeezed, label
     
     def __str__(self):
         return "Hust"

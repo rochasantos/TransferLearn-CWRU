@@ -1,36 +1,42 @@
 import os
 import numpy as np
 import re
-import scipy.io
 from utils.download_extract import download_file
 
-class BaseDataset:
+from abc import ABC, abstractmethod
+
+class BaseDataset(ABC):
     
     def __init__(self, rawfilesdir, spectdir, sample_rate, url, debug):
         """
-        Base class for all datasets. 
-        Defines attributes and a download function to be inherited by specific datasets.
+        Base class for all dataset models. 
+        Defines the attributes and the download and load_signal functions, 
+        along with an abstract extract_data method. The extract_data method 
+        delegates the responsibility of data extraction to the subclasses, 
+        requiring them to implement their specific extraction logic.
 
         Parameters:
         - rawfilesdir (str): The directory where raw files will be stored.
         - url (str): The base URL for downloading the dataset files.
+        
+        Methods:
+            download(): Downloads .mat from the dataset website URL.
         """
         self._rawfilesdir = rawfilesdir  # Directory to store the raw files
-        self._spectdir = spectdir  # Directory to store the raw files
-        self._sample_rate = sample_rate  # Directory to store the raw files
+        self._spectdir = spectdir  # Directory to store the spectrogram files
+        self._sample_rate = sample_rate  # Sampling rate of the data acquisition
         self._url = url  # Base URL for downloading the files
-        self._data = []
-        self._label = []
-        self.debug = debug
+        self._data = [] # List to store the extracted data.
+        self._label = []  # List to store the corresponding labels for the data.
+        self.debug = debug  # Flag to anable or disable debug mode for testing.
+        self.acquisition_maxsize = None  # Maximum size for data acquisition.
 
-        # Check if the raw files directory exists, if not, create it
         if not os.path.exists(self._rawfilesdir):
             os.makedirs(self._rawfilesdir)
 
     
     def download(self):
-        """
-        Download files from datasets website.
+        """ Download files from datasets website.
         """
         url = self.url
         dirname = self.rawfilesdir
@@ -42,6 +48,43 @@ class BaseDataset:
             if not os.path.exists(os.path.join(dirname, filename)):
                 download_file(url, url_suffix, dirname, filename)
         print("Download finished.")
+    
+    def load_signal(self, regex_filter=r'.*\.mat$'):
+        """ Load vibration signal data from .mat files, filtered by a regex. 
+        Args:
+            regex_filter (str): Regular expression to filter filenames.
+        Returns:
+            None
+        """
+        regex = re.compile(regex_filter)
+        signal = []
+        labels = []
+
+        for root, dirs, files in os.walk(self.rawfilesdir):
+            for file in files:
+                filepath = os.path.join(root, file)
+
+                if not regex.search(file):
+                    continue
+
+                data, label = self._extract_data(filepath)
+                signal.append(data)
+                labels.append(label)
+
+        min_size_acquisition = min([np.size(data) for data in signal])
+        trimmed_data = [data[:min_size_acquisition] for data in signal]
+
+        self._data = np.array(trimmed_data)
+        self._label = np.array(labels)
+
+    @classmethod
+    @abstractmethod
+    def _extract_data(self, filepath):
+        """ This method is responsible for extracting data from a bearing fault dataset in a .mat file.
+        Returns:
+            tuple: A tuple containing (data, label), where 'data' is the extracted dataset and 'label' is the corresponding label.
+        """
+        pass
 
     @property
     def url(self):
