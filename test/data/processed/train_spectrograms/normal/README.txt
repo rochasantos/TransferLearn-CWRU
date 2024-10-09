@@ -1,0 +1,1 @@
+Where the images will be created for classifier training.
