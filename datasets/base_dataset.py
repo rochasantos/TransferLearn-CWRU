@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 
 class BaseDataset(ABC):
     
-    def __init__(self, rawfilesdir, spectdir, sample_rate, url, debug):
+    def __init__(self, rawfilesdir, spectdir, sample_rate, url, debug, config='all'):
         """
         Base class for all dataset models. 
         Defines the attributes and the download and load_signal functions, 
