@@ -99,8 +99,8 @@ class CWRU(BaseDataset):
         matlab_file = scipy.io.loadmat(filepath)
         keys = re.findall(r'X\d{3}_[A-Z]{2}_time', str(matlab_file.keys()))
         positions = ['DE']  # get data only accelerometer DE 
-        bearing_position = positions if filename[6:8] == 'NN' else [filename[6:8]]
         filename = os.path.basename(filepath)
+        bearing_position = positions if filename[6:8] == 'NN' else [filename[6:8]]
         label = filename.split('.')[0]
         for key in keys:
             if key[-7:-5] in bearing_position:
