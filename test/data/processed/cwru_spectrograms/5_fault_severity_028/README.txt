@@ -1,1 +1,0 @@
-Where pictures will be created for faulty spectrogram data
