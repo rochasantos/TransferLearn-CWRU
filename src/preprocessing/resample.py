@@ -1,19 +1,11 @@
 import librosa
 import numpy as np
+from src.preprocessing.base import PreprocessingStrategy
 
-def resample_data(data, original_sr, target_sr=42000):
-    """ Resamples the input data to the target sampling rate.
+class ResamplingStrategy(PreprocessingStrategy):
+    def __init__(self, target_sr):
+        self.target_sr = target_sr
 
-    Params
-        data (list of np.array): List of signal samples to be resampled.
-        original_sr (int): Original sampling rate of the signal.
-        target_sr (int, optional): Desired target sampling rate (default is 42000).
+    def process(self, signal, original_sr):        
+        return librosa.resample(signal, orig_sr=original_sr, target_sr=self.target_sr)
 
-    Return
-        np.array: Array of resampled data.
-    """
-    resampled_data = []
-    for sample in data:
-        resampled_sample = librosa.resample(sample, orig_sr=original_sr, target_sr=target_sr)
-        resampled_data.append(resampled_sample)
-    return np.array(resampled_data)

@@ -1,15 +1,13 @@
 import numpy as np
+from src.preprocessing.base import PreprocessingStrategy
 
-def outlier_remove(self, signal):
-    """ Removes outliers from the signal based on the threshold.
+class OutlierRemovalStrategy(PreprocessingStrategy):
+    def __init__(self, threshold):
+        self.threshold = threshold
 
-    Params
-        signal (np.array) : Original signal from which outliers will be removed.
+    def process(self, signal, original_sr):
+        mean = np.mean(signal)
+        std_dev = np.std(signal)
+        filtered_signal = np.where(np.abs(signal - mean) > self.threshold * std_dev, mean, signal)
+        return filtered_signal
         
-    Return 
-        Signal with outliers removed.
-    """
-    mean = np.mean(signal)
-    std_dev = np.std(signal)
-    filtered_signal = np.where(np.abs(signal - mean) > self.threshold * std_dev, mean, signal)
-    return filtered_signal

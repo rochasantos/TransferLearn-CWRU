@@ -1,14 +1,7 @@
 import numpy as np
+from src.preprocessing.base import PreprocessingStrategy
 
-def zero_mean(self, signal):
-    """ Centers the signal at zero by subtracting the mean.
-
-    Params 
-        signal (np.array): Original signal.
-        
-    Return
-        Signal centered at zero.
-    """
-    mean = np.mean(signal)
-    zero_mean_signal = signal - mean
-    return zero_mean_signal
+class ZeroMeanStrategy(PreprocessingStrategy):
+    def process(self, signal, original_sr):
+        return signal - np.mean(signal)
+    

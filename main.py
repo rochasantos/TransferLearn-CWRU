@@ -4,24 +4,46 @@ from datasets.hust import Hust
 from datasets.paderborn import Paderborn
 
 from scripts.create_spectrograms import create_spectrograms
-from scripts.experiments.kfold import kfold
 
-# PARAMS to create the spectrograms
-dataset_name = 'CWRU' # Paderborn, Hust, UORED
-window_size = 12000
-nperseg = 1024
-noverlap = 0
-num_segments = 2
-target_sr = 12000
+from src.preprocessing import PreprocessingPipeline, ResamplingStrategy, ZeroMeanStrategy, OutlierRemovalStrategy
+from scripts.create_spectrograms import create_spectrograms
+from src.feature_engineering.spectrogram import STFTSpectrogramCreator
+
+# SPECTROGRAMS
+## Handle spectrogram creation.
+def run_create_spectrograms():
+    # PARAMS to create the spectrograms
+    dataset = CWRU() # Paderborn, Hust, UORED
+    window_size = 12000
+    nperseg = 1024
+    noverlap = 0
+    num_segments = 1
+    target_sr = 12000
+
+    # Creates the preprocessing pipeline and
+    # add the strategies to the pipeline
+    preprocessing_pipeline = PreprocessingPipeline()
+    preprocessing_pipeline.add_step(ResamplingStrategy(target_sr=target_sr))
+    preprocessing_pipeline.add_step(ZeroMeanStrategy())
+    preprocessing_pipeline.add_step(OutlierRemovalStrategy(threshold=3.0))
+
+    # Creation of spectrograms 
+    spectrogram_creator = STFTSpectrogramCreator(preprocessing_pipeline, target_sr, nperseg, noverlap)
+
+    # Creating the spectrograms
+    create_spectrograms(dataset, window_size, spectrogram_creator, num_segments,
+                        bearing_type='6203') # add regex to filter the data                        
 
 
+# EXPERIMENTERS
+""" Uncomment to handle experiment execution.
 
-if __name__ == '__main__':
+def run_experimenter():
+    kfold()
+
+"""
+
+if __name__ == '__main__':    
     
-    
-    create_spectrograms(dataset_name, target_sr, window_size, nperseg, 
-                        noverlap, num_segments, bearing_type='6203')
-
-    
-    
-    # kfold()
+    run_create_spectrograms()
+    # run_experimenter()
