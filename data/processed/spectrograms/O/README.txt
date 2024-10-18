@@ -1,0 +1,1 @@
+where the spectrograms relating to bearings with faults in the outer race will be stored.
