@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import signal
 
-def _compute_and_save_spectrogram(segment, output, fs, nperseg, noverlap):        
+def compute_and_save_spectrogram(segment, output, fs, nperseg, noverlap):        
     # Compute the Short-Time Fourier Transform (STFT) to get the spectrogram
     f, t, Sxx = signal.stft(segment, nperseg=nperseg, fs=fs, noverlap=noverlap)
     # Compute the spectrogram
