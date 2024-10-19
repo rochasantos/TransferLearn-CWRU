@@ -8,6 +8,7 @@ from scripts.create_spectrograms import create_spectrograms
 from src.preprocessing import PreprocessingPipeline, ResamplingStrategy, ZeroMeanStrategy, OutlierRemovalStrategy
 from scripts.create_spectrograms import create_spectrograms
 from src.feature_engineering.spectrogram import STFTSpectrogramCreator
+from scripts.experiments.kfold import kfold
 
 # SPECTROGRAMS
 ## Handle spectrogram creation.
@@ -20,30 +21,25 @@ def run_create_spectrograms():
     num_segments = 1
     target_sr = 12000
 
-    # Creates the preprocessing pipeline and
-    # add the strategies to the pipeline
+    # Creates the preprocessing pipeline and add the strategies to the pipeline
     preprocessing_pipeline = PreprocessingPipeline()
     preprocessing_pipeline.add_step(ResamplingStrategy(target_sr=target_sr))
-    preprocessing_pipeline.add_step(ZeroMeanStrategy())
-    preprocessing_pipeline.add_step(OutlierRemovalStrategy(threshold=3.0))
+    # preprocessing_pipeline.add_step(ZeroMeanStrategy())
+    # preprocessing_pipeline.add_step(OutlierRemovalStrategy(threshold=3.0))
 
     # Creation of spectrograms 
     spectrogram_creator = STFTSpectrogramCreator(preprocessing_pipeline, target_sr, nperseg, noverlap)
 
     # Creating the spectrograms
     create_spectrograms(dataset, window_size, spectrogram_creator, num_segments,
-                        bearing_type='6203') # add regex to filter the data                        
+                        bearing_type=r'6203|6205') # add regex to filter the data                        
 
 
 # EXPERIMENTERS
-""" Uncomment to handle experiment execution.
-
 def run_experimenter():
     kfold()
 
-"""
 
-if __name__ == '__main__':    
-    
+if __name__ == '__main__':        
     run_create_spectrograms()
-    # run_experimenter()
+    run_experimenter()
