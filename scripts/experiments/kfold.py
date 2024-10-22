@@ -1,40 +1,51 @@
 import os
 import numpy as np
-
 from torchvision import datasets, transforms
+from src.data_processing.custom_image_dataset import CustomImageDataset
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, Subset
-from torch.utils.data import DataLoader
-
 from sklearn.model_selection import StratifiedGroupKFold
+from sklearn.metrics import confusion_matrix
+# from src.models.cnn2d import CNN2DFactory
+from scripts.experiments.grouper import grouper
 
-from src.models.cnn2d import CNN2DFactory
+def print_confusion_matrix(cm, class_names):
+    """Displays the confusion matrix in the console."""
+    print("Confusion Matrix:")
+    print(f"{'':<7}" + "".join(f"{name:<7}" for name in class_names))
+    for i, row in enumerate(cm):
+        print(f"{class_names[i]:<7}" + "".join(f"{val:<7}" for val in row))
 
-from src.data_processing.annotation_file import AnnotationFileHandler
-from scripts.experiments.helper import grouper
-
-def kfold():
+def kfold(model, file_info, group_by="extent_damage"):
     
+    root_dir = 'data/processed/spectrograms'
+    model_save_path = 'saved_models/cnn2d.pth'
+    num_epochs = 15
+    learning_rate = 0.001
+    batch_size = 32
+
     transform = transforms.Compose([
         transforms.Resize((516, 516)),  
         transforms.ToTensor()          
     ])
-    dataset = datasets.ImageFolder(root='data/processed/spectrograms', transform=transform)
+
+    dataset = CustomImageDataset(root_dir, file_info, transform)
 
     X = np.arange(len(dataset))  # get index from spectrograms
     y = dataset.targets  # class tags
 
-    groups = grouper(dataset, "extent_damage")
+    groups = grouper(dataset, group_by)
     
-    skf = StratifiedGroupKFold(n_splits=3)
+    skf = StratifiedGroupKFold(n_splits=4)
 
-    model_save_path = 'saved_models/cnn2d.pth'
-    num_epochs = 15
-    learning_rate = 0.001
-    batch_size=32
-
+    
+    total_accuracy = []
+    
+    # Class labels for the confusion matrix
+    class_names = ['N', 'I', 'O', 'B']  # Your dataset class names
+    
     for fold, (train_idx, test_idx) in enumerate(skf.split(X, y, groups)):
         print(f"Fold {fold + 1}")
         
@@ -47,14 +58,18 @@ def kfold():
         print('Starting model training...')
         
         # Initialize the model, loss function, and optimizer
-        model = CNN2DFactory.create().to('cuda')
+        
+        # Reset model weights for each fold
+        model.apply(lambda m: m.reset_parameters() if hasattr(m, 'reset_parameters') else None)
+
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.Adam(model.parameters(), lr=learning_rate)
         
         # Training loop
         for epoch in range(num_epochs):
             running_loss = 0.0
-            for images, labels in train_loader:
+            for batch in train_loader:
+                images, labels = batch  # Unpack the tuple (images, labels)
                 images, labels = images.to('cuda'), labels.to('cuda')
 
                 optimizer.zero_grad()
@@ -67,22 +82,34 @@ def kfold():
 
             print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {running_loss/len(train_loader):.4f}')
 
-        # Save the trained model
-        # torch.save(model.state_dict(), model_save_path)
-        # print(f'Model trained and saved as {model_save_path}')
-
         print('Training completed. Starting model evaluation...')
         correct = 0
         total = 0
+        fold_true_labels = []
+        fold_predicted_labels = []
 
         # Model evaluation loop
         with torch.no_grad():
-            for images, labels in test_loader:
+            for batch in test_loader:
+                images, labels = batch  # Unpack the tuple (images, labels)
                 images, labels = images.to('cuda'), labels.to('cuda')
                 outputs = model(images)
                 _, predicted = torch.max(outputs, 1)
+                
                 total += labels.size(0)
                 correct += (predicted == labels).sum().item()
+                
+                fold_true_labels.extend(labels.cpu().numpy())  # Add true labels
+                fold_predicted_labels.extend(predicted.cpu().numpy())  # Add predictions
 
         accuracy = 100 * correct / total
-        print(f'Model accuracy on the test set: {accuracy:.2f}%')
+        total_accuracy.append(accuracy)
+        print(f'Model accuracy on the test set for Fold {fold + 1}: {accuracy:.2f}%')
+
+        # Calculate and display the confusion matrix for the current fold, ensuring all classes are shown
+        cm = confusion_matrix(fold_true_labels, fold_predicted_labels, labels=np.arange(len(class_names)))
+        print(f'Confusion Matrix for Fold {fold + 1}:')
+        print_confusion_matrix(cm, class_names)
+
+    total_accuracy_mean = sum(total_accuracy) / len(total_accuracy)
+    print(f'Total Accuracy Mean: {total_accuracy_mean:.2f}%')
