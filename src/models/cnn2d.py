@@ -21,7 +21,7 @@ class CNN2D(nn.Module):
         x = self.fc2(x)
         return x
 
-class CNN2DFactory:
-    @staticmethod
-    def create():
-        return CNN2D()
+# class CNN2DFactory:
+#     @staticmethod
+#     def create():
+#         return CNN2D()
