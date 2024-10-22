@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class CNN2D(nn.Module):
+
     def __init__(self):
         super(CNN2D, self).__init__()
         self.conv1 = nn.Conv2d(in_channels=3, out_channels=16, kernel_size=3, stride=1, padding=1)
@@ -20,8 +21,4 @@ class CNN2D(nn.Module):
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
         return x
-
-# class CNN2DFactory:
-#     @staticmethod
-#     def create():
-#         return CNN2D()
+    
