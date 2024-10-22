@@ -26,12 +26,10 @@ class UORED(BaseDataset):
         __str__(): Returns a string representation of the dataset.
     """
     
-    def __init__(self, debug=False):
+    def __init__(self):
+        
         super().__init__(rawfilesdir = "data/raw/uored",
-                         spectdir="data/processed/uored_spectrograms",
-                         sample_rate=42000,
-                         url = "https://prod-dcd-datasets-public-files-eu-west-1.s3.eu-west-1.amazonaws.com/",
-                         debug=debug)
+                         url = "https://prod-dcd-datasets-public-files-eu-west-1.s3.eu-west-1.amazonaws.com/")
     
     def list_of_bearings(self):
         """ 

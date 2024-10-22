@@ -1,8 +1,6 @@
 import os
 import numpy as np
 import re
-import pandas as pd
-import csv
 from utils.download_extract import download_file
 from src.data_processing.annotation_file import AnnotationFileHandler
 
@@ -39,7 +37,7 @@ class BaseDataset(ABC):
     def download(self):
         """ Download files from datasets website.
         """
-        url = self.url
+        url = self._url
         dirname = self.rawfilesdir
         if not os.path.isdir(dirname):
             os.mkdir(dirname)

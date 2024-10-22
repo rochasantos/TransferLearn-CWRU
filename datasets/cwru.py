@@ -67,6 +67,7 @@ class CWRU(BaseDataset):
     
 if __name__ == '__main__':
     dataset = CWRU()
-    dataset.load_signal(r'[10]{3}\.mat')
-    data, label = dataset.data, dataset.label
-    print(data.shape, label)
+    dataset.download()
+    # dataset.load_signal(r'[10]{3}\.mat')
+    # data, label = dataset.data, dataset.label
+    # print(data.shape, label)
