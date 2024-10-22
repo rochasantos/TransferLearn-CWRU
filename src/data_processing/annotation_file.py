@@ -1,6 +1,5 @@
 import csv
 import re
-import os
 
 class AnnotationFileHandler:
     def __init__(self, filepath="data/annotation_file.csv"):
@@ -36,15 +35,3 @@ class AnnotationFileHandler:
             filtered_data = [row for row in filtered_data if re.search(pattern, row[key])]
         
         return filtered_data
-
-# # Exemplo de uso:
-# file_handler = AnnotationFileHandler('annotation_file.csv')
-
-# # Para retornar todos os dados
-# all_data = file_handler.filter_data()
-
-# # Para filtrar dados usando regex, por exemplo, datasets com 'normal' no label e rpm acima de 1750
-# filtered_data = file_handler.filter_data(label='normal', rpm='^17[5-9][0-9]$')
-
-# # Exibir os dados filtrados
-# print(filtered_data)
