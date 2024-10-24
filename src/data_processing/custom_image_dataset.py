@@ -6,23 +6,28 @@ import glob
 import torch
 
 class CustomImageDataset(Dataset):
-    def __init__(self, root_dir, file_info, transform=None):
+
+    def __init__(self, root_dir, file_info, class_names=['N', 'I', 'O', 'B'], transform=None):
         """
         Args:
             root_dir (string): Root directory containing the images separated by classes.
             file_info (list): List of dictionaries containing the base names of the files and their labels.
             transform (callable, optional): Transformations to be applied to the images.
         """
+
         self.root_dir = root_dir
         self.file_info = file_info
-        self.transform = transform
-        
+        self.transform = transform        
         
         self.samples = []
         self.targets = []  
         
-        label_mapping = {'N': 0, 'I': 1, 'O': 2, 'B': 3}
+        # Maps class names to integers
+        label_mapping = {}
+        for i in range(len(class_names)):
+            label_mapping[class_names[i]] = i
         
+        # Map file labels to corresponding integer values
         for item in file_info:
             base_name = item['filename']
             label = label_mapping[item['label']]  

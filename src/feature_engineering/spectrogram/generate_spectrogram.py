@@ -17,7 +17,6 @@ def generate_spectrogram(data_raw, label, basename, window_size, num_segments,
     for i in range(0, window_size * n_max_segments, window_size):
         # Save the spectrogram image to the specified output directory
         output_file = os.path.join(output_dir, label, basename+'#{}.png'.format(int((i+1)/window_size)))
-        
         if os.path.exists(output_file):
             continue
         
