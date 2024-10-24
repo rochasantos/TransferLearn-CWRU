@@ -1,21 +1,13 @@
 import os
+import sys
+p_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(p_root)
 import numpy as np
 import re
 import scipy.io
 from datasets.base_dataset import BaseDataset
 from utils.download_extract import extract_rar, remove_rar_files
-
-def _extract_label(filepath):
-    tag = filepath.split('_')[-2]
-    if tag == '0':
-        tp = "N_"
-    elif tag == 'A':
-        tp = "O_"
-    else:
-        tp = "I_"    
-    filename = os.path.basename(filepath).split('.')[0]
-    return tp+filename
-
+from src.data_processing.annotation_file import AnnotationFileHandler
 
 class Paderborn(BaseDataset):    
     """
@@ -40,13 +32,12 @@ class Paderborn(BaseDataset):
         __str__(): Returns a string representation of the dataset.
     """
 
-    def __init__(self, debug=False):
+    def __init__(self):
+        
         super().__init__(rawfilesdir = "data/raw/paderborn",
-                         spectdir="data/processed/paderborn_spectrograms",
-                         sample_rate=64000,
-                         url = "https://groups.uni-paderborn.de/kat/BearingDataCenter/",
-                         debug=debug,
-                         config='artificial')
+                         url = "https://groups.uni-paderborn.de/kat/BearingDataCenter/")
+        
+        self.all_files_metadata = AnnotationFileHandler().filter_data(dataset_name='Paderborn')
 
     def list_of_bearings(self):
         """ 
@@ -59,7 +50,7 @@ class Paderborn(BaseDataset):
         elif self.config=='artificial': 
             return [
             ("K001.rar", "K001.rar"), ("K003.rar", "K003.rar"), ("K005.rar", "K005.rar"), ("K006.rar", "K006.rar"), 
-            ("KA01.rar", "KA01.rar"), ("KA03.rar", "KA03.rar"), ("KA04.rar", "KA04.rar"), ("KA05.rar", "KA05.rar"), ("KA06.rar", "KA06.rar"), ("KA07.rar", "KA07.rar"), ("KA09.rar", "KA09.rar") 
+            ("KA01.rar", "KA01.rar"), ("KA03.rar", "KA03.rar"), ("KA04.rar", "KA04.rar"), ("KA05.rar", "KA05.rar"), ("KA06.rar", "KA06.rar"), ("KA07.rar", "KA07.rar"), ("KA09.rar", "KA09.rar"),
             ("KI01.rar", "KI01.rar"), ("KI03.rar", "KI03.rar"), ("KI05.rar", "KI05.rar"), ("KI07.rar", "KI07.rar"), ("KI08.rar", "KI08.rar"),
             ]
         elif self.config=='real':
@@ -100,11 +91,12 @@ class Paderborn(BaseDataset):
             filepath (str): The path to the .mat file.
         Return:
             tuple: A tuple containing the extracted data and its label.
-        """           
+        """
         matlab_file = scipy.io.loadmat(filepath)
         key = os.path.basename(filepath).split('.')[0]
         data_raw = matlab_file[key]['Y'][0][0][0][6][2][0, :]
-        label = _extract_label(filepath)
+        file_metadata = list(filter(lambda x: x["filename"]==key, self.all_files_metadata))[0]
+        label = file_metadata['label']
         if self.acquisition_maxsize:
             return data_raw[:self.acquisition_maxsize], label
         else:
@@ -112,3 +104,8 @@ class Paderborn(BaseDataset):
 
     def __str__(self):
         return "Paderborn"
+    
+if __name__ == '__main__':
+    signal, label = Paderborn().load_signal_by_path('data/raw/paderborn/K001/N09_M07_F10_K001_1.mat')
+    print(signal.shape, label)
+
