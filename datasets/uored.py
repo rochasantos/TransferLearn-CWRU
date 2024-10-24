@@ -116,15 +116,19 @@ class UORED(BaseDataset):
         Return:
             tuple: A tuple containing the extracted data and its label.
         """
+        
         matlab_file = scipy.io.loadmat(filepath)
-        filename = os.path.basename(filepath)
-        label = filename.split('.')[0]
-        data_squeezed = np.squeeze(matlab_file[label][0])  # removes the dimension corresponding to 
-                                                        # the number of channels, as only a single channel is being used.
+        
+        basename = os.path.basename(filepath).split('.')[0]
+        file_info = list(filter(lambda x: x["filename"]==basename, self.annotation_file))[0]
+        
+        label = file_info["label"]
+        data = matlab_file[basename][:, 0]
+         
         if self.acquisition_maxsize:
-            return data_squeezed[:self.acquisition_maxsize], label
+            return data[:self.acquisition_maxsize], label
         else:
-            return data_squeezed, label
+            return data, label
 
     def __str__(self):
         return "UORED"
