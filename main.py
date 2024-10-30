@@ -45,9 +45,10 @@ def experimenter_kfold():
     # model = ResNet18().to('cuda')
 
     file_info = AnnotationFileHandler().filter_data(label=r'N|I|B|O')
+
     kfold(model, file_info, group_by="extent_damage")
 
 
 if __name__ == '__main__':        
-    download_rawfile('Hust')
-    
+    # download_rawfile('Hust')
+    experimenter_kfold()
