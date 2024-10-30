@@ -12,11 +12,14 @@ def create_spectrograms(dataset, window_size, spectrogram_creator, num_segments=
     annot = AnnotationFileHandler().filter_data(dataset_name=dataset_name, **kwargs)
     
     for info in annot:
-        filename, label, orig_sr = info['filename'], info['label'], int(info['sampling_rate'])
-        filepath = os.path.join('data/raw', dataset_name.lower(), filename+'.mat')
-        # load signal
-        signal, label = dataset.load_signal_by_path(filepath)
-        # Processes the data
-        generate_spectrogram(signal, label, filename, window_size,
+        basename, label, orig_sr = info['filename'], info['label'], int(info['sampling_rate'])
+        
+        # load the data
+        rawfile_path = os.path.join('data/raw', dataset_name.lower(), basename+'.mat')
+        signal, label = dataset.load_signal_by_path(rawfile_path)
+        
+        output_path = os.path.join('data/spectrograms', label, basename)
+        
+        generate_spectrogram(signal, output_path, window_size,
                              num_segments, orig_sr, spectrogram_creator)
 

@@ -1,6 +1,6 @@
 import numpy as np
 from torchvision import transforms
-from src.data_processing.custom_image_dataset import CustomImageDataset
+from src.data_processing.dataset import SpectrogramImageDataset
 import copy
 import torch
 import torch.nn as nn
