@@ -1,17 +1,10 @@
 import os
-
-from datasets.cwru import CWRU
-from datasets.uored import UORED
-from datasets.hust import Hust
-from datasets.paderborn import Paderborn
+from datasets import CWRU, UORED, Paderborn, Hust
 
 def download_rawfile(dataset_name = 'all'):
-    datasets = [CWRU(), UORED(), Paderborn()]
+    datasets = [CWRU(), UORED(), Paderborn(), Hust()]
     if dataset_name == 'all':
-        for dataset in datsets:
+        for dataset in datasets:
             dataset.download()
     else:
-        try:
-            eval(f'{dataset_name}().download()')        
-        except:
-            raise f"The dataset {dataset_name} does not exist."
+        eval(f'{dataset_name}().download()')        

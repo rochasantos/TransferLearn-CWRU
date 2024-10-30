@@ -1,7 +1,7 @@
 from datasets.cwru import CWRU
-# from datasets.uored import UORED
-# from datasets.hust import Hust
-# from datasets.paderborn import Paderborn
+from datasets.uored import UORED
+from datasets.hust import Hust
+from datasets.paderborn import Paderborn
 
 from src.preprocessing import PreprocessingPipeline, ResamplingStrategy, ZeroMeanStrategy, OutlierRemovalStrategy
 from scripts.create_spectrograms import create_spectrograms
@@ -49,6 +49,5 @@ def experimenter_kfold():
 
 
 if __name__ == '__main__':        
-    download_rawfile('CWRU')
-    # run_create_spectrograms()
-    # experimenter_kfold()
+    download_rawfile('Hust')
+    

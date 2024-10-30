@@ -46,7 +46,7 @@ class SpectrogramImageDataset(Dataset):
         image = image_rgb.resize((224, 224), Image.ANTIALIAS)
         
         if self.transform:
-            image = self.transform(image_resized)
+            image = self.transform(image)
         
         label = torch.tensor(label, dtype=torch.long)
         

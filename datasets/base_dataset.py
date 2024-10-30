@@ -30,9 +30,11 @@ class BaseDataset(ABC):
         self.acquisition_maxsize = None  # Maximum size for data acquisition.
         self._annotation_file=AnnotationFileHandler().filter_data(dataset_name=self.__class__.__name__)
 
-
         if not os.path.exists(self._rawfilesdir):
-            os.makedirs(self._rawfilesdir)   
+            os.makedirs(self._rawfilesdir)
+
+    def list_of_bearings(self):
+        pass
 
     def download(self):
         """ Download files from datasets website.
@@ -42,10 +44,16 @@ class BaseDataset(ABC):
         if not os.path.isdir(dirname):
             os.mkdir(dirname)
         print(f"Stating download of {self} dataset.")
-        filename_list = [info["filename"]+'.mat' for info in self.annotation_file]
-        for filename in filename_list:
-            if not os.path.exists(os.path.join(dirname, filename)):
-                download_file(url, filename, dirname, filename)
+        list_of_bearings = self.list_of_bearings()
+        dataset_name = self.__class__.__name__.lower()
+        unit = '.mat'
+        if dataset_name == "paderborn":
+            unit = '.rar'
+        for bearing in list_of_bearings:
+            sufix_url = bearing[1]
+            output_path = os.path.join('data/raw', dataset_name, bearing[0]+unit)
+            if not os.path.exists(os.path.join(dirname, sufix_url)):
+                download_file(url, sufix_url, output_path)                
         print("Download finished.")
 
     def load_signal_by_path(self, filepath):

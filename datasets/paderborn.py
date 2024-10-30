@@ -1,13 +1,8 @@
 import os
-import sys
-p_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.append(p_root)
-import numpy as np
-import re
 import scipy.io
 from datasets.base_dataset import BaseDataset
-from utils.download_extract import extract_rar, remove_rar_files
 from src.data_processing.annotation_file import AnnotationFileHandler
+from utils.download_extract import extract_rar
 
 class Paderborn(BaseDataset):    
     """
@@ -39,51 +34,34 @@ class Paderborn(BaseDataset):
         
         self.all_files_metadata = AnnotationFileHandler().filter_data(dataset_name='Paderborn')
 
+
     def list_of_bearings(self):
         """ 
         Returns: 
             A list of tuples containing filenames (for naming downloaded files) and URL suffixes 
             for downloading vibration data.
         """
-        if self.debug:
-            return [("K001.rar", "K001.rar")]
-        elif self.config=='artificial': 
-            return [
-            ("K001.rar", "K001.rar"), ("K003.rar", "K003.rar"), ("K005.rar", "K005.rar"), ("K006.rar", "K006.rar"), 
-            ("KA01.rar", "KA01.rar"), ("KA03.rar", "KA03.rar"), ("KA04.rar", "KA04.rar"), ("KA05.rar", "KA05.rar"), ("KA06.rar", "KA06.rar"), ("KA07.rar", "KA07.rar"), ("KA09.rar", "KA09.rar"),
-            ("KI01.rar", "KI01.rar"), ("KI03.rar", "KI03.rar"), ("KI05.rar", "KI05.rar"), ("KI07.rar", "KI07.rar"), ("KI08.rar", "KI08.rar"),
-            ]
-        elif self.config=='real':
-            return [
-            ("K001.rar", "K001.rar"), ("K002.rar", "K002.rar"), ("K003.rar", "K003.rar"), ("K004.rar", "K004.rar"), ("K005.rar", "K005.rar"), ("K006.rar", "K006.rar"), 
-            ("KA15.rar", "KA15.rar"), ("KA16.rar", "KA16.rar"), ("KA22.rar", "KA22.rar"), ("KA30.rar", "KA30.rar"), 
-            ("KI04.rar", "KI04.rar"), ("KI14.rar", "KI14.rar"), ("KI16.rar", "KI16.rar"), ("KI17.rar", "KI17.rar"), ("KI18.rar", "KI18.rar"), ("KI21.rar", "KI21.rar"), 
-            ]
-        else:
-            return [
-            ("K001.rar", "K001.rar"), ("K002.rar", "K002.rar"), ("K003.rar", "K003.rar"), ("K004.rar", "K004.rar"), ("K005.rar", "K005.rar"), ("K006.rar", "K006.rar"), 
-            ("KA01.rar", "KA01.rar"), ("KA03.rar", "KA03.rar"), ("KA04.rar", "KA04.rar"), ("KA05.rar", "KA05.rar"), ("KA06.rar", "KA06.rar"), ("KA07.rar", "KA07.rar"), ("KA09.rar", "KA09.rar"), ("KA15.rar", "KA15.rar"), ("KA16.rar", "KA16.rar"), ("KA22.rar", "KA22.rar"), ("KA30.rar", "KA30.rar"), 
-            ("KI01.rar", "KI01.rar"), ("KI03.rar", "KI03.rar"), ("KI04.rar", "KI04.rar"), ("KI05.rar", "KI05.rar"), ("KI07.rar", "KI07.rar"), ("KI08.rar", "KI08.rar"), ("KI14.rar", "KI14.rar"), ("KI16.rar", "KI16.rar"), ("KI17.rar", "KI17.rar"), ("KI18.rar", "KI18.rar"), ("KI21.rar", "KI21.rar"), 
-            ]
+        return [
+        ("K001", "K001.rar"), ("K002", "K002.rar"), ("K003", "K003.rar"), ("K004", "K004.rar"), ("K005", "K005.rar"), ("K006", "K006.rar"), 
+        ("KA01", "KA01.rar"), ("KA03", "KA03.rar"), ("KA04", "KA04.rar"), ("KA05", "KA05.rar"), ("KA06", "KA06.rar"), ("KA07", "KA07.rar"), ("KA09", "KA09.rar"), ("KA15", "KA15.rar"), ("KA16", "KA16.rar"), ("KA22", "KA22.rar"), ("KA30", "KA30.rar"), 
+        ("KI01", "KI01.rar"), ("KI03", "KI03.rar"), ("KI04", "KI04.rar"), ("KI05", "KI05.rar"), ("KI07", "KI07.rar"), ("KI08", "KI08.rar"), ("KI14", "KI14.rar"), ("KI16", "KI16.rar"), ("KI17", "KI17.rar"), ("KI18", "KI18.rar"), ("KI21", "KI21.rar"), 
+        ]
     
-    def _extract_rar(self, remove_rarfile=False):
+    
+    def _extract_rar(self):
         """ Extracts .mat files from .rar files and removes them if remove_rarfile is True.
-        Args:
-            remove_rarfile (bool): Allows to remove .rar files after extraction.
-        """     
+        """
         for bearing in self.list_of_bearings():
             rar_path = os.path.join(self.rawfilesdir, bearing[1])
-            dirname = self.rawfilesdir
-            if not os.path.isdir(os.path.splitext(rar_path)[0]):
-                extract_rar(dirname, rar_path)
-        if remove_rarfile:
-            remove_rar_files(self.rawfilesdir)
+            extract_rar(rar_path, self.rawfilesdir)
+
 
     def download(self):
         """ Downloads and extracts .mat files from .rar files.
         """
         super().download()
-        self._extract_rar(remove_rarfile=True)
+        self._extract_rar()
+
 
     def _extract_data(self, filepath):
         """ Extracts data from a .mat file for bearing fault analysis.
@@ -105,7 +83,3 @@ class Paderborn(BaseDataset):
     def __str__(self):
         return "Paderborn"
     
-if __name__ == '__main__':
-    signal, label = Paderborn().load_signal_by_path('data/raw/paderborn/K001/N09_M07_F10_K001_1.mat')
-    print(signal.shape, label)
-
