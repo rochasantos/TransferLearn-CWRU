@@ -14,6 +14,8 @@ def create_spectrograms(dataset, window_size, spectrogram_creator, num_segments=
     for info in annot:
         filename, label, orig_sr = info['filename'], info['label'], int(info['sampling_rate'])
         filepath = os.path.join('data/raw', dataset_name.lower(), filename+'.mat')
+        if info['dataset_name']=='Paderborn':
+            filepath = os.path.join('data/raw/paderborn', filename[12:16], filename+'.mat')
         # load signal
         signal, label = dataset.load_signal_by_path(filepath)
         # Processes the data
