@@ -1,6 +1,6 @@
 import numpy as np
 from torchvision import transforms
-from src.data_processing.custom_image_dataset import CustomImageDataset
+from src.data_processing.dataset import SpectrogramImageDataset
 import copy
 import torch
 import torch.nn as nn
@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader, Subset
 from sklearn.model_selection import StratifiedGroupKFold
 from sklearn.metrics import confusion_matrix
 from scripts.experiments.helper import grouper
+from scripts.train_model import train_model
 
 def print_confusion_matrix(cm, class_names):
     """Displays the confusion matrix in the console."""
@@ -28,12 +29,12 @@ def kfold(model, file_info, group_by="extent_damage"):
     batch_size = 32
 
     transform = transforms.Compose([
-        transforms.Resize((516, 516)),  
+        # transforms.Resize((516, 516)),  
         transforms.ToTensor()          
     ])
 
     class_names = ['N', 'I', 'O', 'B']  # Your dataset class names
-    dataset = CustomImageDataset(root_dir, file_info, class_names, transform)
+    dataset = SpectrogramImageDataset(root_dir, file_info, class_names, transform)
 
     X = np.arange(len(dataset))  # get index from spectrograms
     y = dataset.targets  # class tags
@@ -43,8 +44,6 @@ def kfold(model, file_info, group_by="extent_damage"):
     skf = StratifiedGroupKFold(n_splits=n_splits)
     
     total_accuracy = []
-    
-   
     
     initial_state = copy.deepcopy(model.state_dict())
 
@@ -64,25 +63,8 @@ def kfold(model, file_info, group_by="extent_damage"):
         # Initialize the weights        
         model.load_state_dict(initial_state)
 
-        criterion = nn.CrossEntropyLoss()
-        optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-        
-        # Training loop
-        for epoch in range(num_epochs):
-            running_loss = 0.0
-            for batch in train_loader:
-                images, labels = batch  # Unpack the tuple (images, labels)
-                images, labels = images.to('cuda'), labels.to('cuda')
-
-                optimizer.zero_grad()
-                outputs = model(images)
-                loss = criterion(outputs, labels)
-                loss.backward()
-                optimizer.step()
-
-                running_loss += loss.item()
-
-            print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {running_loss/len(train_loader):.4f}')
+        # Training model
+        train_model(model, train_loader)
 
         print('Training completed. Starting model evaluation...')
         correct = 0
