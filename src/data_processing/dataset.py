@@ -42,10 +42,11 @@ class SpectrogramImageDataset(Dataset):
     
     def __getitem__(self, idx):
         img_path, label = self.samples[idx]
-        image = Image.open(img_path).convert("RGB")
+        image_rgb = Image.open(img_path).convert("RGB")
+        image = image_rgb.resize((224, 224), Image.ANTIALIAS)
         
         if self.transform:
-            image = self.transform(image)
+            image = self.transform(image_resized)
         
         label = torch.tensor(label, dtype=torch.long)
         
