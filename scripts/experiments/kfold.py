@@ -3,13 +3,12 @@ from torchvision import transforms
 from src.data_processing.dataset import SpectrogramImageDataset
 import copy
 import torch
-import torch.nn as nn
-import torch.optim as optim
 from torch.utils.data import DataLoader, Subset
 from sklearn.model_selection import StratifiedGroupKFold
 from sklearn.metrics import confusion_matrix
 from scripts.experiments.helper import grouper
 from scripts.train_model import train_model
+from src.data_processing.annotation_file import AnnotationFileHandler
 
 def print_confusion_matrix(cm, class_names):
     """Displays the confusion matrix in the console."""
@@ -18,7 +17,10 @@ def print_confusion_matrix(cm, class_names):
     for i, row in enumerate(cm):
         print(f"{class_names[i]:<3}" + "".join(f"{val:<5}" for val in row))
 
-def kfold(model, file_info, group_by="extent_damage"):
+def kfold(model, group_by="extent_damage"):
+
+    file_info = AnnotationFileHandler().filter_data(label=r'N|I|B|O')
+
     # Experimenter parameters
     root_dir = 'data/processed/spectrograms'
     n_splits = 4

@@ -42,7 +42,7 @@ class SpectrogramImageDataset(Dataset):
     def __getitem__(self, idx):
         img_path, label = self.samples[idx]
         image_rgb = Image.open(img_path).convert("RGB")
-        image = image_rgb.resize((224, 224), Image.ANTIALIAS)
+        image = image_rgb.resize((224, 224), Image.Resampling.LANCZOS)
         
         if self.transform:
             image = self.transform(image)
