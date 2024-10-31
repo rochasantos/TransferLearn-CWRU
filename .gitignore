@@ -4,15 +4,9 @@ __pycache__
 
 data/raw/**/*.mat
 data/raw/**/**/*.mat
+data/raw/**/*.rar
+data/raw/**/**/*.rar
 data/raw/**/**/*.pdf
 
-data/raw_test/**/*.mat
-data/raw_test/**/**/*.mat
-data/raw_test/**/**/*.pdf
-
-data/processed/**/*.png
-data/processed/**/**/*.png
-
-data/processed_test/**/*.png
-data/processed_test/**/**/*.png
-
+data/**/*.png
+data/**/**/*.png
