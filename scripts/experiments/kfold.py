@@ -19,14 +19,14 @@ def print_confusion_matrix(cm, class_names):
 
 def kfold(model, group_by="extent_damage"):
 
-    file_info = DatasetManager().filter_data(label=r'N|I|B|O')
+    file_info = DatasetManager().filter_data()
 
     # Experimenter parameters
     root_dir = 'data/processed/spectrograms'
     n_splits = 4
     
     # Training parameters
-    num_epochs = 10
+    num_epochs = 52
     learning_rate = 0.005
     batch_size = 32
 
@@ -66,7 +66,7 @@ def kfold(model, group_by="extent_damage"):
         model.load_state_dict(initial_state)
 
         # Training model
-        train_model(model, train_loader)
+        train_model(model, train_loader, num_epochs, batch_size, learning_rate)
 
         print('Training completed. Starting model evaluation...')
         correct = 0
