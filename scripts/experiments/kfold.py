@@ -8,7 +8,7 @@ from sklearn.model_selection import StratifiedGroupKFold
 from sklearn.metrics import confusion_matrix
 from scripts.experiments.helper import grouper
 from scripts.train_model import train_model
-from src.data_processing.annotation_file import AnnotationFileHandler
+from src.data_processing import DatasetManager
 
 def print_confusion_matrix(cm, class_names):
     """Displays the confusion matrix in the console."""
@@ -19,7 +19,7 @@ def print_confusion_matrix(cm, class_names):
 
 def kfold(model, group_by="extent_damage"):
 
-    file_info = AnnotationFileHandler().filter_data(label=r'N|I|B|O')
+    file_info = DatasetManager().filter_data(label=r'N|I|B|O')
 
     # Experimenter parameters
     root_dir = 'data/processed/spectrograms'

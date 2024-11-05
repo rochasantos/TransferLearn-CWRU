@@ -1,7 +1,7 @@
 import torch
 from torch.utils.data import DataLoader
-from src.data_processing.dataset import SpectrogramDataset
-from src.estimators.cnn2d import CNN2D
+from src.data_processing import SpectrogramImageDataset
+from src.models.cnn2d import CNN2D
 import torch.nn.functional as F
 
 def evaluate_model(dataset_path, model_path='saved_models/trained_model.pth'):
@@ -25,7 +25,7 @@ def evaluate_model(dataset_path, model_path='saved_models/trained_model.pth'):
     the provided dataset.
     """
     # Initialize the test dataset and dataloader
-    dataset = SpectrogramDataset(root=dataset_path)
+    dataset = SpectrogramImageDataset(root=dataset_path)
     dataloader = DataLoader(dataset, batch_size=32, shuffle=False, num_workers=4)
 
     # Load the trained model

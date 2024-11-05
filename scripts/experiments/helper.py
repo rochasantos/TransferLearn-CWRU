@@ -1,9 +1,7 @@
 import os
-import torch
-import torch.nn as nn
-from src.data_processing.annotation_file import AnnotationFileHandler
+from src.data_processing import DatasetManager
 
-annot = AnnotationFileHandler()
+annot = DatasetManager()
 
 def get_counter(dataset, feature_mitigation):
     counter = {}

@@ -1,8 +1,8 @@
 dataset_name,filename,label,sampling_rate,rpm,hp,load,extent_damage,damage_method,bearing_type,condition_bearing_health,manufacturer
-CWRU,97,N,12000,1797,0,no,000,no,6203,healthy,manu_cwru
-CWRU,98,N,12000,1772,1,no,000,no,6203,healthy,manu_cwru
-CWRU,99,N,12000,1750,2,no,000,no,6203,healthy,manu_cwru
-CWRU,100,N,12000,1730,3,no,000,no,6203,healthy,manu_cwru
+CWRU,97,N,12000,1797,0,no,000,no,6205,healthy,manu_cwru
+CWRU,98,N,12000,1772,1,no,000,no,6205,healthy,manu_cwru
+CWRU,99,N,12000,1750,2,no,000,no,6205,healthy,manu_cwru
+CWRU,100,N,12000,1730,3,no,000,no,6205,healthy,manu_cwru
 CWRU,105,I,12000,1797,0,no,007,EDM,6205,faulty,manu_cwru
 CWRU,106,I,12000,1772,1,no,007,EDM,6205,faulty,manu_cwru
 CWRU,107,I,12000,1750,2,no,007,EDM,6205,faulty,manu_cwru
