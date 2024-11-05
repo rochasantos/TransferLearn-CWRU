@@ -6,8 +6,8 @@ annot = DatasetManager()
 def get_counter(dataset, feature_mitigation):
     counter = {}
     for i in range(len(dataset)):
-        basename = os.path.basename(dataset.samples[i][0])
-        bearing_info = annot.filter_data(filename=basename.split('#')[0])[0]
+        basename = os.path.basename(dataset.samples[i][0]).split('#')[0]
+        bearing_info = annot.filter_dataset(filename=fr'\b{basename}\b')[0]
         feature_value = bearing_info[feature_mitigation]
 
         if feature_value not in counter:
@@ -24,7 +24,7 @@ def grouper(dataset, feature_mitigation):
     for i in range(len(dataset)):
         path = dataset.samples[i][0]
         basename = os.path.basename(path)
-        bearing_info = annot.filter_data(filename=basename.split('#')[0])[0]
+        bearing_info = annot.filter_dataset(filename=basename.split('#')[0])[0]
         feature_value = bearing_info[feature_mitigation]
         # Distribution of reference bearing values.
         if bearing_info["extent_damage"]=='000':

@@ -41,7 +41,7 @@ class DatasetManager:
         
         return filtered_data
 
-    def filter_data(self, **regex_filters):
+    def filter_dataset(self, **regex_filters):
         """
         Returns 
             Data filtered based on the regexes provided in the parameters.
@@ -54,5 +54,22 @@ class DatasetManager:
         for key, pattern in filters.items():
             # Filters data using regex for each given key
             filtered_data = [row for row in self.data if re.search(pattern, row[key])]
+        
+        return filtered_data
+
+
+    def filter_data(self, filter_params=None):
+        data = self._load_csv()
+        filtered_data = []
+
+        for dataset, config in self.config.items():
+            for item in data:
+                matches = all(
+                    item.get(key) in value and item.get("dataset_name")==dataset if isinstance(value, list) 
+                    else item.get(key) == value and item.get("dataset_name")==dataset
+                    for key, value in config.items()
+                )
+                if matches:
+                    filtered_data.append(item)
         
         return filtered_data

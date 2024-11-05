@@ -10,7 +10,7 @@ def create_spectrograms(data_filter_path, preprocessing_pipeline, num_segments=N
     
     with open('config/spectrogram_config.yaml', 'r') as file:
         spect_info = yaml.safe_load(file)
-
+    print(data_info)
     for info in data_info:
         # Get infos
         dataset_name, basename, orig_sr = info['dataset_name'], info['filename'], int(info['sampling_rate'])

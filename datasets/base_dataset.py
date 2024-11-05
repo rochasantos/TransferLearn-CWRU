@@ -28,7 +28,7 @@ class BaseDataset(ABC):
         self._data = [] # List to store the extracted data.
         self._label = []  # List to store the corresponding labels for the data.
         self.acquisition_maxsize = None  # Maximum size for data acquisition.
-        self._annotation_file=DatasetManager().filter_data(dataset_name=self.__class__.__name__)
+        self._annotation_file=DatasetManager().filter_dataset(dataset_name=self.__class__.__name__)
 
         if not os.path.exists(self._rawfilesdir):
             os.makedirs(self._rawfilesdir)

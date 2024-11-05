@@ -9,6 +9,11 @@ from scripts.experiments.kfold import kfold
 from src.models import CNN2D, ResNet18
 from scripts.download_rawfile import download_rawfile
 
+# Download datasets
+def download_raw_data(datasets):    
+    for dataset in datasets:
+        dataset.download()
+
 # SPECTROGRAMS
 def run_create_spectrograms():
     target_sr = 48000
@@ -22,7 +27,6 @@ def run_create_spectrograms():
 
     # Creation of spectrograms    
     create_spectrograms(filter_config_path, preprocessing_pipeline, num_segments)                        
-
 
 # EXPERIMENTERS
 def run_experimenter():

@@ -1,4 +1,7 @@
 import numpy as np
+import torch
+import torch.nn as nn
+import torch.optim as optim
 from torchvision import transforms
 from src.data_processing.dataset import SpectrogramImageDataset
 import copy
@@ -26,7 +29,7 @@ def kfold(model, group_by="extent_damage"):
     n_splits = 4
     
     # Training parameters
-    num_epochs = 52
+    num_epochs = 10
     learning_rate = 0.005
     batch_size = 32
 
@@ -61,6 +64,25 @@ def kfold(model, group_by="extent_damage"):
         print('Starting model training...')
         
         model = model.to('cuda')
+
+        # Initialize the weights        
+        model.load_state_dict(initial_state)
+
+        criterion = nn.CrossEntropyLoss()
+        optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+        
+        # Training loop
+        for epoch in range(num_epochs):
+            running_loss = 0.0
+            for batch in train_loader:
+                images, labels = batch  # Unpack the tuple (images, labels)
+                images, labels = images.to('cuda'), labels.to('cuda')
+
+                optimizer.zero_grad()
+                outputs = model(images)
+                loss = criterion(outputs, labels)
+                loss.backward()
+                optimizer.step()
 
         # Initialize the weights        
         model.load_state_dict(initial_state)

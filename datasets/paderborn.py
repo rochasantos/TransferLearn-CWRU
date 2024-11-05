@@ -47,7 +47,6 @@ class Paderborn(BaseDataset):
         ("KI01", "KI01.rar"), ("KI03", "KI03.rar"), ("KI04", "KI04.rar"), ("KI05", "KI05.rar"), ("KI07", "KI07.rar"), ("KI08", "KI08.rar"), ("KI14", "KI14.rar"), ("KI16", "KI16.rar"), ("KI17", "KI17.rar"), ("KI18", "KI18.rar"), ("KI21", "KI21.rar"), 
         ]
     
-    
     def _extract_rar(self):
         """ Extracts .mat files from .rar files and removes them if remove_rarfile is True.
         """
