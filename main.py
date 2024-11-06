@@ -1,13 +1,10 @@
 from datasets import CWRU, UORED, Paderborn, Hust
-
 from scripts.create_spectrograms import create_spectrograms
-
 from src.preprocessing import PreprocessingPipeline, ResamplingStrategy, NormalizationStrategy
 from scripts.create_spectrograms import create_spectrograms
 from src.data_processing import DatasetManager
 from scripts.experiments.kfold import kfold
 from src.models import CNN2D, ResNet18
-from scripts.download_rawfile import download_rawfile
 
 # Download datasets
 def download_raw_data(datasets):    
@@ -38,4 +35,3 @@ if __name__ == '__main__':
     # download_rawfile('CWRU')
     # run_create_spectrograms()
     run_experimenter()
-    
