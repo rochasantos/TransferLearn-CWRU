@@ -28,6 +28,6 @@ def run_experimenter():
 
 
 if __name__ == '__main__':
-    # download_rawfile('CWRU')
-    # run_create_spectrograms()
+    download_rawfile('CWRU')
+    run_create_spectrograms()
     run_experimenter()
