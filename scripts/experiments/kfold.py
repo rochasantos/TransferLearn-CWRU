@@ -25,7 +25,7 @@ def kfold(model, group_by="extent_damage"):
     file_info = DatasetManager().filter_data()
 
     # Experimenter parameters
-    root_dir = 'data/processed/spectrograms'
+    root_dir = 'data/spectrograms'
     n_splits = 4
     
     # Training parameters
@@ -43,15 +43,11 @@ def kfold(model, group_by="extent_damage"):
 
     X = np.arange(len(dataset))  # get index from spectrograms
     y = dataset.targets  # class tags
-
+    print(X)
     groups = grouper(dataset, group_by)
-    
-    skf = StratifiedGroupKFold(n_splits=n_splits)
-    
-    total_accuracy = []
-    
     initial_state = copy.deepcopy(model.state_dict())
-
+    total_accuracy = []
+    skf = StratifiedGroupKFold(n_splits=n_splits)
     for fold, (train_idx, test_idx) in enumerate(skf.split(X, y, groups)):
         print(f"Fold {fold + 1}")
         

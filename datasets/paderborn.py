@@ -32,7 +32,7 @@ class Paderborn(BaseDataset):
         super().__init__(rawfilesdir = "data/raw/paderborn",
                          url = "https://groups.uni-paderborn.de/kat/BearingDataCenter/")
         
-        self.all_files_metadata = DatasetManager().filter_data(dataset_name='Paderborn')
+        self.all_files_metadata = DatasetManager().filter_dataset(dataset_name='Paderborn')
 
 
     def list_of_bearings(self):
