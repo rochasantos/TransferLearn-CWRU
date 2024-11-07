@@ -29,7 +29,7 @@ def kfold(model, group_by="extent_damage"):
     n_splits = 4
     
     # Training parameters
-    num_epochs = 10
+    num_epochs = 30
     learning_rate = 0.005
     batch_size = 32
 

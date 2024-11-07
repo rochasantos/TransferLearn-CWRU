@@ -4,7 +4,7 @@ from src.preprocessing import PreprocessingPipeline, ResamplingStrategy, Normali
 from scripts.create_spectrograms import create_spectrograms
 from src.data_processing import DatasetManager
 from scripts.experiments.kfold import kfold
-from src.models import CNN2D, ResNet18
+from src.models import CNN2D, ResNet18, ViTClassifier
 from scripts.download_rawfile import download_rawfile
 
 # SPECTROGRAMS
@@ -23,7 +23,8 @@ def run_create_spectrograms():
 
 # EXPERIMENTERS
 def run_experimenter():
-    model = ResNet18()    
+    #model = ResNet18() 
+    model = ViTClassifier()   
     kfold(model, group_by="extent_damage")
 
 
