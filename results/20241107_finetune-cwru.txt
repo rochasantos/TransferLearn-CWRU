@@ -1,0 +1,213 @@
+Fine-tuning on CWRU were conducted using a ResNet18 with k-fold cross-validation, with only 
+layer4 used for fine-tuning in cross-validation to address similarity bias in severity levels.
+
+Parameters
+-----------
+epochs pretrain: 30
+epochs finetune: 40
+learning_rate_pretrain: 0.001
+learning_rate_finetune: 0.0001
+ 
+{'000': 140, '007': 880, '014': 525, '021': 880, '028': 80}
+
+Fold 1
+Fold 1, Epoch 1/40, Train Loss: 1.6827
+Fold 1, Epoch 2/40, Train Loss: 0.0510
+Fold 1, Epoch 3/40, Train Loss: 0.0251
+Fold 1, Epoch 4/40, Train Loss: 0.0138
+Fold 1, Epoch 5/40, Train Loss: 0.0060
+Fold 1, Epoch 6/40, Train Loss: 0.0051
+Fold 1, Epoch 7/40, Train Loss: 0.0073
+Fold 1, Epoch 8/40, Train Loss: 0.0019
+Fold 1, Epoch 9/40, Train Loss: 0.0026
+Fold 1, Epoch 10/40, Train Loss: 0.0023
+Fold 1, Epoch 11/40, Train Loss: 0.0011
+Fold 1, Epoch 12/40, Train Loss: 0.0015
+Fold 1, Epoch 13/40, Train Loss: 0.0022
+Fold 1, Epoch 14/40, Train Loss: 0.0021
+Fold 1, Epoch 15/40, Train Loss: 0.0008
+Fold 1, Epoch 16/40, Train Loss: 0.0007
+Fold 1, Epoch 17/40, Train Loss: 0.0008
+Fold 1, Epoch 18/40, Train Loss: 0.0008
+Fold 1, Epoch 19/40, Train Loss: 0.0012
+Fold 1, Epoch 20/40, Train Loss: 0.0071
+Fold 1, Epoch 21/40, Train Loss: 0.0061
+Fold 1, Epoch 22/40, Train Loss: 0.0035
+Fold 1, Epoch 23/40, Train Loss: 0.0075
+Fold 1, Epoch 24/40, Train Loss: 0.0225
+Fold 1, Epoch 25/40, Train Loss: 0.0071
+Fold 1, Epoch 26/40, Train Loss: 0.0023
+Fold 1, Epoch 27/40, Train Loss: 0.0009
+Fold 1, Epoch 28/40, Train Loss: 0.0004
+Fold 1, Epoch 29/40, Train Loss: 0.0068
+Fold 1, Epoch 30/40, Train Loss: 0.0234
+Fold 1, Epoch 31/40, Train Loss: 0.0025
+Fold 1, Epoch 32/40, Train Loss: 0.0013
+Fold 1, Epoch 33/40, Train Loss: 0.0004
+Fold 1, Epoch 34/40, Train Loss: 0.0005
+Fold 1, Epoch 35/40, Train Loss: 0.0021
+Fold 1, Epoch 36/40, Train Loss: 0.0012
+Fold 1, Epoch 37/40, Train Loss: 0.0122
+Fold 1, Epoch 38/40, Train Loss: 0.0040
+Fold 1, Epoch 39/40, Train Loss: 0.0269
+Fold 1, Epoch 40/40, Train Loss: 0.0030
+
+Fold 1 Validation Loss: 4.4432, Accuracy: 42.95%
+Confusion Matrix for Fold 1:
+   N    I    O    B    
+N  35   0    0    0    
+I  1    175  0    4    
+O  0    297  168  55   
+B  0    18   147  15 
+
+Fold 2
+Fold 2, Epoch 1/40, Train Loss: 1.6203
+Fold 2, Epoch 2/40, Train Loss: 0.0447
+Fold 2, Epoch 3/40, Train Loss: 0.0401
+Fold 2, Epoch 4/40, Train Loss: 0.0225
+Fold 2, Epoch 5/40, Train Loss: 0.0093
+Fold 2, Epoch 6/40, Train Loss: 0.0065
+Fold 2, Epoch 7/40, Train Loss: 0.0069
+Fold 2, Epoch 8/40, Train Loss: 0.0033
+Fold 2, Epoch 9/40, Train Loss: 0.0133
+Fold 2, Epoch 10/40, Train Loss: 0.0142
+Fold 2, Epoch 11/40, Train Loss: 0.0019
+Fold 2, Epoch 12/40, Train Loss: 0.0023
+Fold 2, Epoch 13/40, Train Loss: 0.0007
+Fold 2, Epoch 14/40, Train Loss: 0.0006
+Fold 2, Epoch 15/40, Train Loss: 0.0007
+Fold 2, Epoch 16/40, Train Loss: 0.0004
+Fold 2, Epoch 17/40, Train Loss: 0.0012
+Fold 2, Epoch 18/40, Train Loss: 0.0027
+Fold 2, Epoch 19/40, Train Loss: 0.0013
+Fold 2, Epoch 20/40, Train Loss: 0.0007
+Fold 2, Epoch 21/40, Train Loss: 0.0015
+Fold 2, Epoch 22/40, Train Loss: 0.0213
+Fold 2, Epoch 23/40, Train Loss: 0.0131
+Fold 2, Epoch 24/40, Train Loss: 0.0090
+Fold 2, Epoch 25/40, Train Loss: 0.0051
+Fold 2, Epoch 26/40, Train Loss: 0.0006
+Fold 2, Epoch 27/40, Train Loss: 0.0004
+Fold 2, Epoch 28/40, Train Loss: 0.0019
+Fold 2, Epoch 29/40, Train Loss: 0.0006
+Fold 2, Epoch 30/40, Train Loss: 0.0009
+Fold 2, Epoch 31/40, Train Loss: 0.0006
+Fold 2, Epoch 32/40, Train Loss: 0.0004
+Fold 2, Epoch 33/40, Train Loss: 0.0004
+Fold 2, Epoch 34/40, Train Loss: 0.0002
+Fold 2, Epoch 35/40, Train Loss: 0.0002
+Fold 2, Epoch 36/40, Train Loss: 0.0002
+Fold 2, Epoch 37/40, Train Loss: 0.0001
+Fold 2, Epoch 38/40, Train Loss: 0.0002
+Fold 2, Epoch 39/40, Train Loss: 0.0002
+Fold 2, Epoch 40/40, Train Loss: 0.0002
+
+Fold 2 Validation Loss: 6.1923, Accuracy: 24.37%
+Confusion Matrix for Fold 2:
+   N    I    O    B    
+N  35   0    0    0    
+I  0    15   132  33   
+O  0    271  148  101  
+B  0    17   138  25   
+
+Fold 3
+Fold 3, Epoch 1/40, Train Loss: 1.1553
+Fold 3, Epoch 2/40, Train Loss: 0.0307
+Fold 3, Epoch 3/40, Train Loss: 0.0092
+Fold 3, Epoch 4/40, Train Loss: 0.0047
+Fold 3, Epoch 5/40, Train Loss: 0.0151
+Fold 3, Epoch 6/40, Train Loss: 0.0025
+Fold 3, Epoch 7/40, Train Loss: 0.0018
+Fold 3, Epoch 8/40, Train Loss: 0.0045
+Fold 3, Epoch 9/40, Train Loss: 0.0041
+Fold 3, Epoch 10/40, Train Loss: 0.0019
+Fold 3, Epoch 11/40, Train Loss: 0.0008
+Fold 3, Epoch 12/40, Train Loss: 0.0009
+Fold 3, Epoch 13/40, Train Loss: 0.0007
+Fold 3, Epoch 14/40, Train Loss: 0.0007
+Fold 3, Epoch 15/40, Train Loss: 0.0005
+Fold 3, Epoch 16/40, Train Loss: 0.0005
+Fold 3, Epoch 17/40, Train Loss: 0.0003
+Fold 3, Epoch 18/40, Train Loss: 0.0036
+Fold 3, Epoch 19/40, Train Loss: 0.0080
+Fold 3, Epoch 20/40, Train Loss: 0.0016
+Fold 3, Epoch 21/40, Train Loss: 0.0031
+Fold 3, Epoch 22/40, Train Loss: 0.0010
+Fold 3, Epoch 23/40, Train Loss: 0.0004
+Fold 3, Epoch 24/40, Train Loss: 0.0006
+Fold 3, Epoch 25/40, Train Loss: 0.0074
+Fold 3, Epoch 26/40, Train Loss: 0.0025
+Fold 3, Epoch 27/40, Train Loss: 0.0007
+Fold 3, Epoch 28/40, Train Loss: 0.0035
+Fold 3, Epoch 29/40, Train Loss: 0.0012
+Fold 3, Epoch 30/40, Train Loss: 0.0003
+Fold 3, Epoch 31/40, Train Loss: 0.0007
+Fold 3, Epoch 32/40, Train Loss: 0.0032
+Fold 3, Epoch 33/40, Train Loss: 0.0004
+Fold 3, Epoch 34/40, Train Loss: 0.0003
+Fold 3, Epoch 35/40, Train Loss: 0.0003
+Fold 3, Epoch 36/40, Train Loss: 0.0001
+Fold 3, Epoch 37/40, Train Loss: 0.0001
+Fold 3, Epoch 38/40, Train Loss: 0.0002
+Fold 3, Epoch 39/40, Train Loss: 0.0001
+Fold 3, Epoch 40/40, Train Loss: 0.0001
+
+Fold 3 Validation Loss: 9.8739, Accuracy: 27.50%
+Confusion Matrix for Fold 3:
+   N    I    O    B    
+N  35   0    0    0    
+I  30   0    128  5    
+O  0    0    1    179  
+B  0    1    61   118  
+
+Fold 4
+Fold 4, Epoch 1/40, Train Loss: 1.3093
+Fold 4, Epoch 2/40, Train Loss: 0.0545
+Fold 4, Epoch 3/40, Train Loss: 0.0219
+Fold 4, Epoch 4/40, Train Loss: 0.0099
+Fold 4, Epoch 5/40, Train Loss: 0.0110
+Fold 4, Epoch 6/40, Train Loss: 0.0060
+Fold 4, Epoch 7/40, Train Loss: 0.0110
+Fold 4, Epoch 8/40, Train Loss: 0.0054
+Fold 4, Epoch 9/40, Train Loss: 0.0190
+Fold 4, Epoch 10/40, Train Loss: 0.0347
+Fold 4, Epoch 11/40, Train Loss: 0.0107
+Fold 4, Epoch 12/40, Train Loss: 0.0027
+Fold 4, Epoch 13/40, Train Loss: 0.0032
+Fold 4, Epoch 14/40, Train Loss: 0.0008
+Fold 4, Epoch 15/40, Train Loss: 0.0038
+Fold 4, Epoch 16/40, Train Loss: 0.0038
+Fold 4, Epoch 17/40, Train Loss: 0.0017
+Fold 4, Epoch 18/40, Train Loss: 0.0007
+Fold 4, Epoch 19/40, Train Loss: 0.0011
+Fold 4, Epoch 20/40, Train Loss: 0.0026
+Fold 4, Epoch 21/40, Train Loss: 0.0062
+Fold 4, Epoch 22/40, Train Loss: 0.0132
+Fold 4, Epoch 23/40, Train Loss: 0.0026
+Fold 4, Epoch 24/40, Train Loss: 0.0046
+Fold 4, Epoch 25/40, Train Loss: 0.0025
+Fold 4, Epoch 26/40, Train Loss: 0.0030
+Fold 4, Epoch 27/40, Train Loss: 0.0006
+Fold 4, Epoch 28/40, Train Loss: 0.0004
+Fold 4, Epoch 29/40, Train Loss: 0.0002
+Fold 4, Epoch 30/40, Train Loss: 0.0003
+Fold 4, Epoch 31/40, Train Loss: 0.0003
+Fold 4, Epoch 32/40, Train Loss: 0.0021
+Fold 4, Epoch 33/40, Train Loss: 0.0156
+Fold 4, Epoch 34/40, Train Loss: 0.0061
+Fold 4, Epoch 35/40, Train Loss: 0.0042
+Fold 4, Epoch 36/40, Train Loss: 0.0010
+Fold 4, Epoch 37/40, Train Loss: 0.0003
+Fold 4, Epoch 38/40, Train Loss: 0.0005
+Fold 4, Epoch 39/40, Train Loss: 0.0059
+Fold 4, Epoch 40/40, Train Loss: 0.0178
+
+Fold 4 Validation Loss: 4.1828, Accuracy: 33.91%
+Confusion Matrix for Fold 4:
+     N    I    O    B    
+N  35   0    0    0    
+I  0    1    4    35   
+O  0    0    0    0    
+B  0    9    28   3    
+Total Accuracy Mean: 32.18%
+
