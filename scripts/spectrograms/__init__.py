@@ -1,0 +1,3 @@
+from .create_specto_hust import create_spectrograms as create_hust_spectrogram
+from .create_specto_uored import create_spectrograms as create_uored_spectrogram
+from .create_specto_cwru import create_spectrograms as create_cwru_spectrogram
