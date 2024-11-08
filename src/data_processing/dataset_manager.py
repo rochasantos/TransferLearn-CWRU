@@ -58,11 +58,19 @@ class DatasetManager:
         return filtered_data
 
 
-    def filter_data(self, filter_params=None):
+    def filter_data(self, filter=None):
         data = self._load_csv()
         filtered_data = []
 
-        for dataset, config in self.config.items():
+        filter_config = filter or self.config
+        for dataset, config in filter_config.items():
+            print('dataset:', dataset)
+            print('config:', config)
+            for key, value in config.items():
+                print('key:', key)
+                print('value:', value)
+                
+
             for item in data:
                 matches = all(
                     item.get(key) in value and item.get("dataset_name")==dataset if isinstance(value, list) 
