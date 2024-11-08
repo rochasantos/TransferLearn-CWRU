@@ -1,9 +1,17 @@
-Pre-training on UORED and Hust, and fine-tuning on CWRU were conducted using a ResNet18 with k-fold cross-validation, with all layers except layer3 and layer4 frozen during pre-training, and only layer4 used for fine-tuning in cross-validation to address similarity bias in severity levels.
+Pre-training on UORED and Hust, and fine-tuning on CWRU were conducted using a ResNet18 
+with k-fold cross-validation, with all layers except layer3 and layer4 frozen during 
+pre-training, and only layer4 used for fine-tuning in cross-validation to address similarity 
+bias in severity levels.
+
+Parameters
+----------
 epochs pretrain: 30
 epochs finetune: 40
 learning_rate_pretrain: 0.005
 learning_rate_finetune: 0.001
  
+Pre-training
+-------------
 Epoch 1/30, Loss Dataset 1: 1.2190, Loss Dataset 2: 0.8560
 Epoch 2/30, Loss Dataset 1: 0.7421, Loss Dataset 2: 0.4871
 Epoch 3/30, Loss Dataset 1: 0.4897, Loss Dataset 2: 0.3831
@@ -35,7 +43,7 @@ Epoch 28/30, Loss Dataset 1: 0.0069, Loss Dataset 2: 0.0147
 Epoch 29/30, Loss Dataset 1: 0.0014, Loss Dataset 2: 0.0052
 Epoch 30/30, Loss Dataset 1: 0.0053, Loss Dataset 2: 0.0022
  
-{'000': 80, '007': 580, '014': 345, '021': 580, '028': 80}
+Counter: {'000': 80, '007': 580, '014': 345, '021': 580, '028': 80}
 
 Fold 1
 Fold 1, Epoch 1/40, Train Loss: 5.7613

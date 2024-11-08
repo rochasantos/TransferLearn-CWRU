@@ -8,8 +8,10 @@ epochs finetune: 40
 learning_rate_pretrain: 0.001
 learning_rate_finetune: 0.0001
  
-{'000': 140, '007': 880, '014': 525, '021': 880, '028': 80}
+Groups: {'000': 140, '007': 880, '014': 525, '021': 880, '028': 80}
 
+Fine-tuning
+-----------
 Fold 1
 Fold 1, Epoch 1/40, Train Loss: 1.6827
 Fold 1, Epoch 2/40, Train Loss: 0.0510
