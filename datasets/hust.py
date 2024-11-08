@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.io
 import os
+import re
 from datasets.base_dataset import BaseDataset
 
 class Hust(BaseDataset):    
@@ -144,7 +145,7 @@ class Hust(BaseDataset):
         """
         matlab_file = scipy.io.loadmat(filepath)
         filename = os.path.basename(filepath)
-        label = filename.split('.')[0]                
+        label = re.findall(r'[A-Z]{1,2}', filename)[0]       
         data_squeezed = np.squeeze(matlab_file["data"])
         if self.acquisition_maxsize:
             return data_squeezed[:self.acquisition_maxsize], label
