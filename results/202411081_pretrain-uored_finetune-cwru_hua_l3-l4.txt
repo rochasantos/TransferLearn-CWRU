@@ -1,0 +1,368 @@
+Pre-training on UORED and Hust, and fine-tuning on CWRU were conducted using a ResNet18 with 
+k-fold cross-validation, with all layers except layer3 and layer4 frozen during pre-training, 
+and only layer4 used for fine-tuning in cross-validation to address similarity bias in severity 
+levels.
+
+Parameters
+----------
+epochs pretrain: 30
+epochs finetune: 70
+learning_rate_pretrain: 0.005
+learning_rate_finetune: 0.0005
+
+Pre-training
+------------
+Epoch 1/30, Loss Dataset 1: 1.0126
+Epoch 2/30, Loss Dataset 1: 0.2269
+Epoch 3/30, Loss Dataset 1: 0.0932
+Epoch 4/30, Loss Dataset 1: 0.0316
+Epoch 5/30, Loss Dataset 1: 0.0808
+Epoch 6/30, Loss Dataset 1: 0.1869
+Epoch 7/30, Loss Dataset 1: 0.0598
+Epoch 8/30, Loss Dataset 1: 0.0620
+Epoch 9/30, Loss Dataset 1: 0.0799
+Epoch 10/30, Loss Dataset 1: 0.0120
+Epoch 11/30, Loss Dataset 1: 0.0036
+Epoch 12/30, Loss Dataset 1: 0.0009
+Epoch 13/30, Loss Dataset 1: 0.0026
+Epoch 14/30, Loss Dataset 1: 0.0008
+Epoch 15/30, Loss Dataset 1: 0.0014
+Epoch 16/30, Loss Dataset 1: 0.0004
+Epoch 17/30, Loss Dataset 1: 0.0232
+Epoch 18/30, Loss Dataset 1: 0.0108
+Epoch 19/30, Loss Dataset 1: 0.0080
+Epoch 20/30, Loss Dataset 1: 0.0055
+Epoch 21/30, Loss Dataset 1: 0.0064
+Epoch 22/30, Loss Dataset 1: 0.0236
+Epoch 23/30, Loss Dataset 1: 0.0634
+Epoch 24/30, Loss Dataset 1: 0.0404
+Epoch 25/30, Loss Dataset 1: 0.1036
+Epoch 26/30, Loss Dataset 1: 0.0417
+Epoch 27/30, Loss Dataset 1: 0.0245
+Epoch 28/30, Loss Dataset 1: 0.0163
+Epoch 29/30, Loss Dataset 1: 0.0009
+Epoch 30/30, Loss Dataset 1: 0.0015
+
+Couter: {'000': 80, '007': 580, '014': 345, '021': 580, '028': 80}
+
+Fold 1
+Fold 1, Epoch 1/70, Train Loss: 7.8154
+Fold 1, Epoch 2/70, Train Loss: 0.9790
+Fold 1, Epoch 3/70, Train Loss: 0.3675
+Fold 1, Epoch 4/70, Train Loss: 0.1521
+Fold 1, Epoch 5/70, Train Loss: 0.0725
+Fold 1, Epoch 6/70, Train Loss: 0.0860
+Fold 1, Epoch 7/70, Train Loss: 0.0438
+Fold 1, Epoch 8/70, Train Loss: 0.0199
+Fold 1, Epoch 9/70, Train Loss: 0.0129
+Fold 1, Epoch 10/70, Train Loss: 0.0175
+Fold 1, Epoch 11/70, Train Loss: 0.0079
+Fold 1, Epoch 12/70, Train Loss: 0.0027
+Fold 1, Epoch 13/70, Train Loss: 0.0037
+Fold 1, Epoch 14/70, Train Loss: 0.0105
+Fold 1, Epoch 15/70, Train Loss: 0.0146
+Fold 1, Epoch 16/70, Train Loss: 0.0158
+Fold 1, Epoch 17/70, Train Loss: 0.0271
+Fold 1, Epoch 18/70, Train Loss: 0.0281
+Fold 1, Epoch 19/70, Train Loss: 0.0099
+Fold 1, Epoch 20/70, Train Loss: 0.0176
+Fold 1, Epoch 21/70, Train Loss: 0.0148
+Fold 1, Epoch 22/70, Train Loss: 0.0187
+Fold 1, Epoch 23/70, Train Loss: 0.0082
+Fold 1, Epoch 24/70, Train Loss: 0.0030
+Fold 1, Epoch 25/70, Train Loss: 0.0041
+Fold 1, Epoch 26/70, Train Loss: 0.0019
+Fold 1, Epoch 27/70, Train Loss: 0.0039
+Fold 1, Epoch 28/70, Train Loss: 0.0009
+Fold 1, Epoch 29/70, Train Loss: 0.1007
+Fold 1, Epoch 30/70, Train Loss: 0.0545
+Fold 1, Epoch 31/70, Train Loss: 0.0222
+Fold 1, Epoch 32/70, Train Loss: 0.0069
+Fold 1, Epoch 33/70, Train Loss: 0.0030
+Fold 1, Epoch 34/70, Train Loss: 0.0008
+Fold 1, Epoch 35/70, Train Loss: 0.0012
+Fold 1, Epoch 36/70, Train Loss: 0.0006
+Fold 1, Epoch 37/70, Train Loss: 0.0008
+Fold 1, Epoch 38/70, Train Loss: 0.0013
+Fold 1, Epoch 39/70, Train Loss: 0.0105
+Fold 1, Epoch 40/70, Train Loss: 0.0162
+Fold 1, Epoch 41/70, Train Loss: 0.0088
+Fold 1, Epoch 42/70, Train Loss: 0.0034
+Fold 1, Epoch 43/70, Train Loss: 0.0084
+Fold 1, Epoch 44/70, Train Loss: 0.0023
+Fold 1, Epoch 45/70, Train Loss: 0.0184
+Fold 1, Epoch 46/70, Train Loss: 0.0246
+Fold 1, Epoch 47/70, Train Loss: 0.0072
+Fold 1, Epoch 48/70, Train Loss: 0.0403
+Fold 1, Epoch 49/70, Train Loss: 0.0124
+Fold 1, Epoch 50/70, Train Loss: 0.0019
+Fold 1, Epoch 51/70, Train Loss: 0.0014
+Fold 1, Epoch 52/70, Train Loss: 0.0031
+Fold 1, Epoch 53/70, Train Loss: 0.0022
+Fold 1, Epoch 54/70, Train Loss: 0.0011
+Fold 1, Epoch 55/70, Train Loss: 0.0003
+Fold 1, Epoch 56/70, Train Loss: 0.0048
+Fold 1, Epoch 57/70, Train Loss: 0.0250
+Fold 1, Epoch 58/70, Train Loss: 0.0016
+Fold 1, Epoch 59/70, Train Loss: 0.0008
+Fold 1, Epoch 60/70, Train Loss: 0.0003
+Fold 1, Epoch 61/70, Train Loss: 0.0008
+Fold 1, Epoch 62/70, Train Loss: 0.0047
+Fold 1, Epoch 63/70, Train Loss: 0.0056
+Fold 1, Epoch 64/70, Train Loss: 0.0066
+Fold 1, Epoch 65/70, Train Loss: 0.0202
+Fold 1, Epoch 66/70, Train Loss: 0.0128
+Fold 1, Epoch 67/70, Train Loss: 0.0217
+Fold 1, Epoch 68/70, Train Loss: 0.0070
+Fold 1, Epoch 69/70, Train Loss: 0.0012
+Fold 1, Epoch 70/70, Train Loss: 0.0005
+
+Fold 1 Validation Loss: 5.4343, Accuracy: 34.67%
+Confusion Matrix for Fold 1:
+   N    I    O    B    
+N  20   0    0    0    
+I  64   17   39   0    
+O  0    161  145  34   
+B  0    14   80   26   
+
+Fold 2
+Fold 2, Epoch 1/70, Train Loss: 7.3087
+Fold 2, Epoch 2/70, Train Loss: 1.1230
+Fold 2, Epoch 3/70, Train Loss: 0.4525
+Fold 2, Epoch 4/70, Train Loss: 0.3027
+Fold 2, Epoch 5/70, Train Loss: 0.2038
+Fold 2, Epoch 6/70, Train Loss: 0.1370
+Fold 2, Epoch 7/70, Train Loss: 0.1141
+Fold 2, Epoch 8/70, Train Loss: 0.1063
+Fold 2, Epoch 9/70, Train Loss: 0.0815
+Fold 2, Epoch 10/70, Train Loss: 0.0306
+Fold 2, Epoch 11/70, Train Loss: 0.0236
+Fold 2, Epoch 12/70, Train Loss: 0.0086
+Fold 2, Epoch 13/70, Train Loss: 0.0214
+Fold 2, Epoch 14/70, Train Loss: 0.0181
+Fold 2, Epoch 15/70, Train Loss: 0.0158
+Fold 2, Epoch 16/70, Train Loss: 0.0938
+Fold 2, Epoch 17/70, Train Loss: 0.0297
+Fold 2, Epoch 18/70, Train Loss: 0.0100
+Fold 2, Epoch 19/70, Train Loss: 0.0158
+Fold 2, Epoch 20/70, Train Loss: 0.0089
+Fold 2, Epoch 21/70, Train Loss: 0.0063
+Fold 2, Epoch 22/70, Train Loss: 0.0429
+Fold 2, Epoch 23/70, Train Loss: 0.0188
+Fold 2, Epoch 24/70, Train Loss: 0.0241
+Fold 2, Epoch 25/70, Train Loss: 0.0103
+Fold 2, Epoch 26/70, Train Loss: 0.0052
+Fold 2, Epoch 27/70, Train Loss: 0.0039
+Fold 2, Epoch 28/70, Train Loss: 0.0023
+Fold 2, Epoch 29/70, Train Loss: 0.0074
+Fold 2, Epoch 30/70, Train Loss: 0.0057
+Fold 2, Epoch 31/70, Train Loss: 0.0027
+Fold 2, Epoch 32/70, Train Loss: 0.0075
+Fold 2, Epoch 33/70, Train Loss: 0.0112
+Fold 2, Epoch 34/70, Train Loss: 0.0027
+Fold 2, Epoch 35/70, Train Loss: 0.0040
+Fold 2, Epoch 36/70, Train Loss: 0.0051
+Fold 2, Epoch 37/70, Train Loss: 0.0007
+Fold 2, Epoch 38/70, Train Loss: 0.0014
+Fold 2, Epoch 39/70, Train Loss: 0.0012
+Fold 2, Epoch 40/70, Train Loss: 0.0015
+Fold 2, Epoch 41/70, Train Loss: 0.0099
+Fold 2, Epoch 42/70, Train Loss: 0.0084
+Fold 2, Epoch 43/70, Train Loss: 0.0218
+Fold 2, Epoch 44/70, Train Loss: 0.0358
+Fold 2, Epoch 45/70, Train Loss: 0.0167
+Fold 2, Epoch 46/70, Train Loss: 0.0324
+Fold 2, Epoch 47/70, Train Loss: 0.0151
+Fold 2, Epoch 48/70, Train Loss: 0.0418
+Fold 2, Epoch 49/70, Train Loss: 0.0348
+Fold 2, Epoch 50/70, Train Loss: 0.0087
+Fold 2, Epoch 51/70, Train Loss: 0.0029
+Fold 2, Epoch 52/70, Train Loss: 0.0007
+Fold 2, Epoch 53/70, Train Loss: 0.0010
+Fold 2, Epoch 54/70, Train Loss: 0.0014
+Fold 2, Epoch 55/70, Train Loss: 0.0019
+Fold 2, Epoch 56/70, Train Loss: 0.0016
+Fold 2, Epoch 57/70, Train Loss: 0.0005
+Fold 2, Epoch 58/70, Train Loss: 0.0006
+Fold 2, Epoch 59/70, Train Loss: 0.0043
+Fold 2, Epoch 60/70, Train Loss: 0.0170
+Fold 2, Epoch 61/70, Train Loss: 0.0237
+Fold 2, Epoch 62/70, Train Loss: 0.0051
+Fold 2, Epoch 63/70, Train Loss: 0.0028
+Fold 2, Epoch 64/70, Train Loss: 0.0006
+Fold 2, Epoch 65/70, Train Loss: 0.0064
+Fold 2, Epoch 66/70, Train Loss: 0.0139
+Fold 2, Epoch 67/70, Train Loss: 0.0014
+Fold 2, Epoch 68/70, Train Loss: 0.0010
+Fold 2, Epoch 69/70, Train Loss: 0.0003
+Fold 2, Epoch 70/70, Train Loss: 0.0006
+
+Fold 2 Validation Loss: 7.1471, Accuracy: 26.17%
+Confusion Matrix for Fold 2:
+   N    I    O    B    
+N  20   0    0    0    
+I  0    31   0    89   
+O  0    229  20   91   
+B  0    1    33   86   
+
+Fold 3
+Fold 3, Epoch 1/70, Train Loss: 6.9782
+Fold 3, Epoch 2/70, Train Loss: 0.5557
+Fold 3, Epoch 3/70, Train Loss: 0.1785
+Fold 3, Epoch 4/70, Train Loss: 0.0776
+Fold 3, Epoch 5/70, Train Loss: 0.0267
+Fold 3, Epoch 6/70, Train Loss: 0.0252
+Fold 3, Epoch 7/70, Train Loss: 0.0111
+Fold 3, Epoch 8/70, Train Loss: 0.0101
+Fold 3, Epoch 9/70, Train Loss: 0.0113
+Fold 3, Epoch 10/70, Train Loss: 0.0360
+Fold 3, Epoch 11/70, Train Loss: 0.0126
+Fold 3, Epoch 12/70, Train Loss: 0.0082
+Fold 3, Epoch 13/70, Train Loss: 0.0105
+Fold 3, Epoch 14/70, Train Loss: 0.0039
+Fold 3, Epoch 15/70, Train Loss: 0.0046
+Fold 3, Epoch 16/70, Train Loss: 0.0021
+Fold 3, Epoch 17/70, Train Loss: 0.0031
+Fold 3, Epoch 18/70, Train Loss: 0.0023
+Fold 3, Epoch 19/70, Train Loss: 0.0010
+Fold 3, Epoch 20/70, Train Loss: 0.0031
+Fold 3, Epoch 21/70, Train Loss: 0.0038
+Fold 3, Epoch 22/70, Train Loss: 0.0012
+Fold 3, Epoch 23/70, Train Loss: 0.0011
+Fold 3, Epoch 24/70, Train Loss: 0.0007
+Fold 3, Epoch 25/70, Train Loss: 0.0122
+Fold 3, Epoch 26/70, Train Loss: 0.0381
+Fold 3, Epoch 27/70, Train Loss: 0.0022
+Fold 3, Epoch 28/70, Train Loss: 0.0034
+Fold 3, Epoch 29/70, Train Loss: 0.0021
+Fold 3, Epoch 30/70, Train Loss: 0.0004
+Fold 3, Epoch 31/70, Train Loss: 0.0007
+Fold 3, Epoch 32/70, Train Loss: 0.0039
+Fold 3, Epoch 33/70, Train Loss: 0.0052
+Fold 3, Epoch 34/70, Train Loss: 0.0313
+Fold 3, Epoch 35/70, Train Loss: 0.0075
+Fold 3, Epoch 36/70, Train Loss: 0.0006
+Fold 3, Epoch 37/70, Train Loss: 0.0066
+Fold 3, Epoch 38/70, Train Loss: 0.0049
+Fold 3, Epoch 39/70, Train Loss: 0.0029
+Fold 3, Epoch 40/70, Train Loss: 0.0013
+Fold 3, Epoch 41/70, Train Loss: 0.0004
+Fold 3, Epoch 42/70, Train Loss: 0.0004
+Fold 3, Epoch 43/70, Train Loss: 0.0020
+Fold 3, Epoch 44/70, Train Loss: 0.0043
+Fold 3, Epoch 45/70, Train Loss: 0.0029
+Fold 3, Epoch 46/70, Train Loss: 0.0017
+Fold 3, Epoch 47/70, Train Loss: 0.0030
+Fold 3, Epoch 48/70, Train Loss: 0.0121
+Fold 3, Epoch 49/70, Train Loss: 0.0015
+Fold 3, Epoch 50/70, Train Loss: 0.0008
+Fold 3, Epoch 51/70, Train Loss: 0.0005
+Fold 3, Epoch 52/70, Train Loss: 0.0005
+Fold 3, Epoch 53/70, Train Loss: 0.0001
+Fold 3, Epoch 54/70, Train Loss: 0.0002
+Fold 3, Epoch 55/70, Train Loss: 0.0001
+Fold 3, Epoch 56/70, Train Loss: 0.0001
+Fold 3, Epoch 57/70, Train Loss: 0.0005
+Fold 3, Epoch 58/70, Train Loss: 0.0001
+Fold 3, Epoch 59/70, Train Loss: 0.0000
+Fold 3, Epoch 60/70, Train Loss: 0.0000
+Fold 3, Epoch 61/70, Train Loss: 0.0000
+Fold 3, Epoch 62/70, Train Loss: 0.0009
+Fold 3, Epoch 63/70, Train Loss: 0.0015
+Fold 3, Epoch 64/70, Train Loss: 0.0005
+Fold 3, Epoch 65/70, Train Loss: 0.0004
+Fold 3, Epoch 66/70, Train Loss: 0.0003
+Fold 3, Epoch 67/70, Train Loss: 0.0001
+Fold 3, Epoch 68/70, Train Loss: 0.0001
+Fold 3, Epoch 69/70, Train Loss: 0.0001
+Fold 3, Epoch 70/70, Train Loss: 0.0001
+
+Fold 3 Validation Loss: 8.4515, Accuracy: 32.33%
+Confusion Matrix for Fold 3:
+   N    I    O    B    
+N  20   0    0    0    
+I  0    7    80   18   
+O  0    1    0    119  
+B  14   1    14   91  
+
+Fold 4
+Fold 4, Epoch 1/70, Train Loss: 6.1863
+Fold 4, Epoch 2/70, Train Loss: 0.6140
+Fold 4, Epoch 3/70, Train Loss: 0.3095
+Fold 4, Epoch 4/70, Train Loss: 0.1487
+Fold 4, Epoch 5/70, Train Loss: 0.0887
+Fold 4, Epoch 6/70, Train Loss: 0.0458
+Fold 4, Epoch 7/70, Train Loss: 0.0429
+Fold 4, Epoch 8/70, Train Loss: 0.0307
+Fold 4, Epoch 9/70, Train Loss: 0.0188
+Fold 4, Epoch 10/70, Train Loss: 0.0200
+Fold 4, Epoch 11/70, Train Loss: 0.0254
+Fold 4, Epoch 12/70, Train Loss: 0.0194
+Fold 4, Epoch 13/70, Train Loss: 0.0181
+Fold 4, Epoch 14/70, Train Loss: 0.0122
+Fold 4, Epoch 15/70, Train Loss: 0.0161
+Fold 4, Epoch 16/70, Train Loss: 0.0048
+Fold 4, Epoch 17/70, Train Loss: 0.0090
+Fold 4, Epoch 18/70, Train Loss: 0.0080
+Fold 4, Epoch 19/70, Train Loss: 0.0047
+Fold 4, Epoch 20/70, Train Loss: 0.0017
+Fold 4, Epoch 21/70, Train Loss: 0.0049
+Fold 4, Epoch 22/70, Train Loss: 0.0160
+Fold 4, Epoch 23/70, Train Loss: 0.0069
+Fold 4, Epoch 24/70, Train Loss: 0.0068
+Fold 4, Epoch 25/70, Train Loss: 0.0105
+Fold 4, Epoch 26/70, Train Loss: 0.0030
+Fold 4, Epoch 27/70, Train Loss: 0.0027
+Fold 4, Epoch 28/70, Train Loss: 0.0049
+Fold 4, Epoch 29/70, Train Loss: 0.0031
+Fold 4, Epoch 30/70, Train Loss: 0.0031
+Fold 4, Epoch 31/70, Train Loss: 0.0029
+Fold 4, Epoch 32/70, Train Loss: 0.0040
+Fold 4, Epoch 33/70, Train Loss: 0.0015
+Fold 4, Epoch 34/70, Train Loss: 0.0016
+Fold 4, Epoch 35/70, Train Loss: 0.0010
+Fold 4, Epoch 36/70, Train Loss: 0.0001
+Fold 4, Epoch 37/70, Train Loss: 0.0116
+Fold 4, Epoch 38/70, Train Loss: 0.0379
+Fold 4, Epoch 39/70, Train Loss: 0.0076
+Fold 4, Epoch 40/70, Train Loss: 0.0101
+Fold 4, Epoch 41/70, Train Loss: 0.0052
+Fold 4, Epoch 42/70, Train Loss: 0.0156
+Fold 4, Epoch 43/70, Train Loss: 0.0063
+Fold 4, Epoch 44/70, Train Loss: 0.0021
+Fold 4, Epoch 45/70, Train Loss: 0.0011
+Fold 4, Epoch 46/70, Train Loss: 0.0004
+Fold 4, Epoch 47/70, Train Loss: 0.0202
+Fold 4, Epoch 48/70, Train Loss: 0.0017
+Fold 4, Epoch 49/70, Train Loss: 0.0009
+Fold 4, Epoch 50/70, Train Loss: 0.0003
+Fold 4, Epoch 51/70, Train Loss: 0.0006
+Fold 4, Epoch 52/70, Train Loss: 0.0006
+Fold 4, Epoch 53/70, Train Loss: 0.0001
+Fold 4, Epoch 54/70, Train Loss: 0.0251
+Fold 4, Epoch 55/70, Train Loss: 0.0131
+Fold 4, Epoch 56/70, Train Loss: 0.0146
+Fold 4, Epoch 57/70, Train Loss: 0.0028
+Fold 4, Epoch 58/70, Train Loss: 0.0032
+Fold 4, Epoch 59/70, Train Loss: 0.0104
+Fold 4, Epoch 60/70, Train Loss: 0.0090
+Fold 4, Epoch 61/70, Train Loss: 0.0025
+Fold 4, Epoch 62/70, Train Loss: 0.0003
+Fold 4, Epoch 63/70, Train Loss: 0.0004
+Fold 4, Epoch 64/70, Train Loss: 0.0001
+Fold 4, Epoch 65/70, Train Loss: 0.0006
+Fold 4, Epoch 66/70, Train Loss: 0.0003
+Fold 4, Epoch 67/70, Train Loss: 0.0005
+Fold 4, Epoch 68/70, Train Loss: 0.0011
+Fold 4, Epoch 69/70, Train Loss: 0.0007
+Fold 4, Epoch 70/70, Train Loss: 0.0001
+
+Fold 4 Validation Loss: 2.9371, Accuracy: 29.00%
+Confusion Matrix for Fold 4:
+   N    I    O    B    
+N  20   0    0    0    
+I  0    4    0    36   
+O  0    0    0    0    
+B  0    0    35   5    
+Total Accuracy Mean: 30.54%
+
