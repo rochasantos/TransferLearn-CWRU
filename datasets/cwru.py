@@ -1,34 +1,10 @@
-import sys
-import os
-p_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.append(p_root)
-
-import scipy.io
-import numpy as np
 import os
 import re
+import scipy.io
+import numpy as np
 from datasets.base_dataset import BaseDataset
 
-class CWRU(BaseDataset):
-    """
-    CWRU Dataset Class
-
-    This class manages the CWRU (Case Western Reserve University) bearing dataset used for fault diagnosis.
-    It provides methods for listing bearing files, loading vibration signals, and setting up dataset attributes.
-    This class inherits from BaseDataset the load_signal methods responsible for loading and downloading data.
-    
-    Attributes
-        rawfilesdir (str) : Directory where raw data files are stored.
-        spectdir (str) : Directory where processed spectrograms will be saved.
-        sample_rate (int) : Sampling rate of the vibration data.
-        url (str) : URL for downloading the Paderborn dataset.
-        debug (bool) : If True, limits the number of files processed for faster testing.
-
-    Methods
-        list_of_bearings(): Returns a list of tuples with filenames and URL suffixes for downloading vibration data.
-        _extract_data(): Extracts the vibration signal data from .mat files.
-        __str__(): Returns a string representation of the dataset.
-    """
+class CWRU(BaseDataset):    
 
     def list_of_bearings(self):
         """ 
@@ -106,10 +82,3 @@ class CWRU(BaseDataset):
     def __str__(self):
         return "CWRU"
     
-    
-if __name__ == '__main__':
-    dataset = CWRU()
-    dataset.download()
-    # dataset.load_signal(r'[10]{3}\.mat')
-    # data, label = dataset.data, dataset.label
-    # print(data.shape, label)
