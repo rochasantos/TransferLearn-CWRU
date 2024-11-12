@@ -2,9 +2,9 @@ from datasets import CWRU, UORED, Paderborn, Hust
 from scripts.create_spectrograms import create_spectrograms
 from src.preprocessing import PreprocessingPipeline, ResamplingStrategy, NormalizationStrategy
 from src.data_processing import DatasetManager
-#from scripts.experiments.kfold import kfold
+from scripts.experiments.kfold import kfold
 from src.models import CNN2D, ResNet18, ViTClassifier
-from scripts.experiments.modelvalidation import resubstitution_test, one_fold_with_bias, one_fold_without_bias
+from scripts.experiments.modelvalidation import resubstitution_test, one_fold_with_bias, one_fold_without_bias, kfold_cross_validation
 from src.models.vitclassifier import train_and_save, load_trained_model
 from scripts.download_rawfile import download_rawfile
 from torchvision import transforms
@@ -62,8 +62,8 @@ def run_experimenter():
     vit_train_dataloader = DataLoader(vit_train_dataset, batch_size=32, shuffle=True)
     
     # Instantiate the ViTClassifier and train it with dataset2 to narrow the model context
-    model = ViTClassifier().to("cuda")
-    train_and_save(model, vit_train_dataloader, num_epochs_vit_train, lr_vit_train, save_path)  # Train and save the model
+    # model = ViTClassifier().to("cuda")
+    # train_and_save(model, vit_train_dataloader, num_epochs_vit_train, lr_vit_train, save_path)  # Train and save the model
 
     # Load the trained model for testing/evaluation
     model = load_trained_model(ViTClassifier, save_path, num_classes=len(class_names)).to("cuda")
@@ -74,12 +74,15 @@ def run_experimenter():
     
     num_epochs = 10
     lr = 0.001
+    #group_by = "rpm" 
+    group_by = "extent_damage"
+    #group_by = ""
     
-    resubstitution_test(model, dataset1, num_epochs, lr)               # Resubstitution error validation
+    #resubstitution_test(model, dataset1, num_epochs, lr)               # Resubstitution error validation
     #one_fold_with_bias(model, dataset1, num_epochs, lr)                # Train and test with 1 fold and bias
     #one_fold_without_bias(model, dataset1, num_epochs, lr)             # Train and test with 1 fold without bias
     
-    # kfold(model, group_by="extent_damage")
+    kfold_cross_validation(model, dataset1, num_epochs, lr, group_by, n_splits=4)
 
 
 if __name__ == '__main__':
