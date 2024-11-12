@@ -122,3 +122,10 @@ class UORED(BaseDataset):
 
     def __str__(self):
         return "UORED"
+    
+if __name__ == '__main__':
+    dataset = UORED()
+    dataset.download()
+    # dataset.load_signal(r'[10]{3}\.mat')
+    # data, label = dataset.data, dataset.label
+    # print(data.shape, label)

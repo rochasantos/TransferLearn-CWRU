@@ -10,3 +10,4 @@ data/raw/**/**/*.pdf
 
 data/**/*.png
 data/**/**/*.png
+vit_classifier.pth

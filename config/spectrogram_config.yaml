@@ -6,6 +6,15 @@ CWRU:
     noverlap: 0
   Split:
     window_size: 12000
+UORED:
+  Spectrogram:
+    nfft: 1600
+    fs: 48000
+    nperseg: 580
+    noverlap: 0
+  Split:
+    window_size: 580
+
 # Hust:
 #   NFFT: 1600
 #   Fs: 51200
@@ -17,9 +26,3 @@ CWRU:
 #   Fs: 64000
 #   nperseg: 580
 #   noverlap: 0
-# UORED:
-#   NFFT: 1600
-#   Fs: 42000
-#   nperseg: 580
-#   noverlap: 0
-#   window_size: 580
