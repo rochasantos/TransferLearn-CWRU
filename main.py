@@ -4,7 +4,7 @@ from src.preprocessing import PreprocessingPipeline, ResamplingStrategy, Normali
 from src.data_processing import DatasetManager
 #from scripts.experiments.kfold import kfold
 from src.models import CNN2D, ResNet18, ViTClassifier
-from src.models.modelvalidation import resubstitution_test, one_fold_with_bias, one_fold_without_bias
+from scripts.experiments.modelvalidation import resubstitution_test, one_fold_with_bias, one_fold_without_bias
 from src.models.vitclassifier import train_and_save, load_trained_model
 from scripts.download_rawfile import download_rawfile
 from torchvision import transforms
@@ -75,9 +75,9 @@ def run_experimenter():
     num_epochs = 10
     lr = 0.001
     
-    #resubstitution_test(model, dataset1, num_epochs, lr)               # Resubstitution error validation
+    resubstitution_test(model, dataset1, num_epochs, lr)               # Resubstitution error validation
     #one_fold_with_bias(model, dataset1, num_epochs, lr)                # Train and test with 1 fold and bias
-    one_fold_without_bias(model, dataset1, num_epochs, lr)             # Train and test with 1 fold without bias
+    #one_fold_without_bias(model, dataset1, num_epochs, lr)             # Train and test with 1 fold without bias
     
     # kfold(model, group_by="extent_damage")
 
