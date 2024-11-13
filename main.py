@@ -47,11 +47,11 @@ def run_experimenter():
     class_names = ['N', 'I', 'O', 'B']  # Your dataset class names
     
      # Load only CWRU dataset
-    file_info_CWRU = dataset_manager.filter_by_dataset_name("CWRU")
+    file_info_CWRU = dataset_manager.filter_dataset(dataset_name=r'^CWRU$')
     dataset_CWRU = SpectrogramImageDataset(root_dir, file_info_CWRU, class_names, transform)
 
     # Load only UORED dataset
-    file_info_UORED = dataset_manager.filter_by_dataset_name("UORED")
+    file_info_UORED = dataset_manager.filter_dataset(dataset_name=r'^UORED$')
     dataset_UORED = SpectrogramImageDataset(root_dir, file_info_UORED, class_names, transform)
  
     dataset1 = dataset_CWRU
@@ -62,31 +62,31 @@ def run_experimenter():
     vit_train_dataloader = DataLoader(vit_train_dataset, batch_size=32, shuffle=True)
     
     # Instantiate the ViTClassifier and train it with dataset2 to narrow the model context
-    # model = ViTClassifier().to("cuda")
-    # train_and_save(model, vit_train_dataloader, num_epochs_vit_train, lr_vit_train, save_path)  # Train and save the model
+    #model = ViTClassifier().to("cuda")
+    #train_and_save(model, vit_train_dataloader, num_epochs_vit_train, lr_vit_train, save_path)  # Train and save the model
 
     # Load the trained model for testing/evaluation
     model = load_trained_model(ViTClassifier, save_path, num_classes=len(class_names)).to("cuda")
 
-    X = np.arange(len(dataset1))  # get index from spectrograms
-    #y = dataset.targets  # class tags
-    print(X)
+    #Xidx = np.arange(len(dataset1))  # get index from spectrograms
+    #y = dataset1.targets  # class tags
+    #print(X)
     
-    num_epochs = 10
+    num_epochs = 5
     lr = 0.001
     #group_by = "rpm" 
-    group_by = "extent_damage"
-    #group_by = ""
+    #group_by = "extent_damage"
+    group_by = ""
     
-    #resubstitution_test(model, dataset1, num_epochs, lr)               # Resubstitution error validation
-    #one_fold_with_bias(model, dataset1, num_epochs, lr)                # Train and test with 1 fold and bias
-    #one_fold_without_bias(model, dataset1, num_epochs, lr)             # Train and test with 1 fold without bias
+    #resubstitution_test(model, dataset2, num_epochs, lr, class_names)               # Resubstitution error validation
+    #one_fold_with_bias(model, dataset1, num_epochs, lr, class_names)                # Train and test with 1 fold and bias
+    #one_fold_without_bias(model, dataset1, num_epochs, lr, class_names)             # Train and test with 1 fold without bias
     
-    kfold_cross_validation(model, dataset1, num_epochs, lr, group_by, n_splits=4)
+    kfold_cross_validation(model, dataset1, num_epochs, lr, group_by, class_names, n_splits=4)
 
 
 if __name__ == '__main__':
-    download_rawfile('CWRU')
-    download_rawfile('UORED')
-    run_create_spectrograms()
+    #download_rawfile('CWRU')
+    #download_rawfile('UORED')
+    #run_create_spectrograms()
     run_experimenter()

@@ -73,17 +73,3 @@ class DatasetManager:
                     filtered_data.append(item)
         
         return filtered_data
-    
-    def filter_by_dataset_name(self, dataset_name):
-        """Filter the data by the given dataset name."""
-        filtered_data = []
-        if dataset_name in self.config:
-            config = self.config[dataset_name]
-            for item in self.data:
-                matches = all(
-                    item.get(key) in value if isinstance(value, list) else item.get(key) == value
-                    for key, value in config.items()
-                )
-                if matches and item.get("dataset_name") == dataset_name:
-                    filtered_data.append(item)
-        return filtered_data

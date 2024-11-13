@@ -8,7 +8,14 @@ from sklearn.model_selection import train_test_split
 from sklearn.model_selection import StratifiedShuffleSplit, StratifiedGroupKFold, StratifiedKFold
 from scripts.experiments.helper import grouper 
 
-def resubstitution_test(model, dataset, num_epochs, lr):
+def print_confusion_matrix(cm, class_names):
+    """Displays the confusion matrix in the console."""
+    print("Confusion Matrix:")
+    print(f"{'':<5}" + "".join(f"{name:<5}" for name in class_names))
+    for i, row in enumerate(cm):
+        print(f"{class_names[i]:<3}" + "".join(f"{val:<5}" for val in row))
+
+def resubstitution_test(model, dataset, num_epochs, lr, class_names):
     # Set up data loader
     dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
     
@@ -21,6 +28,7 @@ def resubstitution_test(model, dataset, num_epochs, lr):
     
     # Training loop
     print('Starting Resubstitution Test Training...')
+    print(dataset.get_dataset_name())
     model.train()
     for epoch in range(num_epochs):
         total_loss = 0.0
@@ -52,9 +60,11 @@ def resubstitution_test(model, dataset, num_epochs, lr):
     accuracy = accuracy_score(all_labels, all_predictions) * 100
     cm = confusion_matrix(all_labels, all_predictions)
     print(f'Resubstitution Accuracy: {accuracy:.2f}%')
-    print('Confusion Matrix:\n', cm)
+    #print('Confusion Matrix:\n', cm)
+    print(dataset.get_dataset_name())
+    print_confusion_matrix(cm, class_names)
 
-def one_fold_with_bias(model, dataset, num_epochs, lr):
+def one_fold_with_bias(model, dataset, num_epochs, lr, class_names):
     # Split the data with bias (random train-test split)
     train_idx, test_idx = train_test_split(range(len(dataset)), test_size=0.2, stratify=dataset.targets, random_state=42)
     
@@ -70,6 +80,7 @@ def one_fold_with_bias(model, dataset, num_epochs, lr):
     
     # Training loop
     print('Starting One-Fold (With Bias) Training...')
+    print(dataset.get_dataset_name())
     model.train()
     for epoch in range(num_epochs):
         total_loss = 0.0
@@ -84,7 +95,7 @@ def one_fold_with_bias(model, dataset, num_epochs, lr):
 
         print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {total_loss / len(train_loader):.4f}')
     print('Training completed. Starting evaluation...')
-
+    
     # Evaluation
     model.eval()
     all_labels, all_predictions = [], []
@@ -100,9 +111,11 @@ def one_fold_with_bias(model, dataset, num_epochs, lr):
     accuracy = accuracy_score(all_labels, all_predictions) * 100
     cm = confusion_matrix(all_labels, all_predictions)
     print(f'One-Fold (With Bias) Accuracy: {accuracy:.2f}%')
-    print('Confusion Matrix:\n', cm)
+    #print('Confusion Matrix:\n', cm)
+    print(dataset.get_dataset_name())
+    print_confusion_matrix(cm, class_names)
 
-def one_fold_without_bias(model, dataset, num_epochs, lr):
+def one_fold_without_bias(model, dataset, num_epochs, lr, class_names):
     # Stratified split to reduce bias
     sss = StratifiedShuffleSplit(n_splits=1, test_size=0.2, random_state=42)
     X = np.arange(len(dataset))
@@ -120,6 +133,7 @@ def one_fold_without_bias(model, dataset, num_epochs, lr):
     
     # Training loop
     print('Starting One-Fold (Without Bias) Training...')
+    print(dataset.get_dataset_name())
     model.train()
     for epoch in range(num_epochs):
         total_loss = 0.0
@@ -134,7 +148,7 @@ def one_fold_without_bias(model, dataset, num_epochs, lr):
 
         print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {total_loss / len(train_loader):.4f}')
     print('Training completed. Starting evaluation...')
-
+    
     # Evaluation
     model.eval()
     all_labels, all_predictions = [], []
@@ -150,9 +164,11 @@ def one_fold_without_bias(model, dataset, num_epochs, lr):
     accuracy = accuracy_score(all_labels, all_predictions) * 100
     cm = confusion_matrix(all_labels, all_predictions)
     print(f'One-Fold (Without Bias) Accuracy: {accuracy:.2f}%')
-    print('Confusion Matrix:\n', cm) 
+    #print('Confusion Matrix:\n', cm) 
+    print(dataset.get_dataset_name())
+    print_confusion_matrix(cm, class_names)
     
-def kfold_cross_validation(model, dataset, num_epochs, lr, group_by="", n_splits=4):
+def kfold_cross_validation(model, dataset, num_epochs, lr, group_by="", class_names=[], n_splits=4):
     """Performs K-Fold Cross-Validation with optional grouping on the provided dataset."""
     batch_size = 32
     X = np.arange(len(dataset))
@@ -171,6 +187,7 @@ def kfold_cross_validation(model, dataset, num_epochs, lr, group_by="", n_splits
     initial_state = model.state_dict()
     fold_accuracies = []
 
+    print('Starting K-Fold Cross-Validation Loop...')   
     # K-Fold Cross-Validation Loop
     for fold, (train_idx, test_idx) in enumerate(split):
         print(f"\nStarting Fold {fold + 1}")
@@ -209,6 +226,7 @@ def kfold_cross_validation(model, dataset, num_epochs, lr, group_by="", n_splits
 
         # Evaluation Loop
         print("Evaluating Fold...")
+
         model.eval()
         all_labels, all_predictions = [], []
         with torch.no_grad():
@@ -225,13 +243,16 @@ def kfold_cross_validation(model, dataset, num_epochs, lr, group_by="", n_splits
             fold_accuracies.append(accuracy)
             cm = confusion_matrix(all_labels, all_predictions)
             print(f"Fold {fold + 1} Accuracy: {accuracy:.2f}%")
-            print("Confusion Matrix:\n", cm)
+            #print("Confusion Matrix:\n", cm)
+            print(dataset.get_dataset_name())
+            print_confusion_matrix(cm, class_names)
         else:
             print(f"No test data for evaluation in Fold {fold + 1}. Accuracy cannot be computed.")
 
     # Summary of cross-validation results
     if fold_accuracies:
         mean_accuracy = np.mean(fold_accuracies)
+        print(dataset.get_dataset_name())
         print(f"\nMean Cross-Validation Accuracy: {mean_accuracy:.2f}%")
     else:
         print("No valid folds with test data to compute cross-validation accuracy.")

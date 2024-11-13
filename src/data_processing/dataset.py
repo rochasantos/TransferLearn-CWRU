@@ -21,13 +21,19 @@ class SpectrogramImageDataset(Dataset):
         self.samples = []
         self.targets = []  
         
+        # Extract dataset name from the first item in file_info if available
+        self.dataset_name = file_info[0].get('dataset_name', 'Unknown') if file_info else 'Unknown'
+        
         # Maps class names to integers
         label_mapping = {}
         for i in range(len(class_names)):
             label_mapping[class_names[i]] = i
         
+        # Filter out entries in file_info where label is not in class_names
+        filtered_file_info = [item for item in file_info if item['label'] in label_mapping]
+
         # Map file labels to corresponding integer values
-        for item in file_info:
+        for item in filtered_file_info:
             base_name = item['filename']
             label = label_mapping[item['label']]  
             
@@ -35,6 +41,10 @@ class SpectrogramImageDataset(Dataset):
             for filepath in glob.glob(os.path.join(root_dir, '**', f'{base_name}#*.png'), recursive=True):
                 self.samples.append((filepath, label))  
                 self.targets.append(label)  
+           
+        if not self.samples:
+            print("Warning: No samples found matching the specified class names.")
+
     
     def __len__(self):
         return len(self.samples)
@@ -50,3 +60,7 @@ class SpectrogramImageDataset(Dataset):
         label = torch.tensor(label, dtype=torch.long)
         
         return image, label
+    
+    def get_dataset_name(self):
+        """Returns the dataset name for informational purposes."""
+        return self.dataset_name
