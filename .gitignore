@@ -8,5 +8,11 @@ data/raw/**/*.rar
 data/raw/**/**/*.rar
 data/raw/**/**/*.pdf
 
+data/spectrograms/**/**/*.png
+
 data/**/*.png
 data/**/**/*.png
+
+*.pth
+
+*.drawio.svg
