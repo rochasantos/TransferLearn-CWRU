@@ -2,12 +2,9 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-def train_model(model, train_loader, num_epochs=10, learning_rate=0.001, device="cuda", initial_state=None):
+def train_model(model, train_loader, num_epochs=10, learning_rate=0.001, device="cuda"):
     
     model = model.to(device)
-
-    if initial_state:
-        model.load_state_dict(initial_state)
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
