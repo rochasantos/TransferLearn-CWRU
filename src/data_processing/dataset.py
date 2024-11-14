@@ -4,6 +4,7 @@ from torch.utils.data import Dataset
 import glob
 import torch
 
+
 class SpectrogramImageDataset(Dataset):
 
     def __init__(self, root_dir, file_info, class_names, transform=None):
@@ -40,7 +41,9 @@ class SpectrogramImageDataset(Dataset):
         return len(self.samples)
     
     def __getitem__(self, idx):
+
         img_path, label = self.samples[idx]
+        # print("img_path:", img_path)
         image_rgb = Image.open(img_path).convert("RGB")
         image = image_rgb.resize((224, 224), Image.Resampling.LANCZOS)
         

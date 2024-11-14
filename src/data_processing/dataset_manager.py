@@ -7,7 +7,7 @@ class DatasetManager:
         self.metainfo_path = metainfo_path
         self.data = self._load_csv()
         self.filter_config = self._load_config(filter_config_path)
-        self.dataset_name = dataset_name
+        self.dataset_name=dataset_name
 
     def _load_csv(self):
         data = []
@@ -21,24 +21,27 @@ class DatasetManager:
         with open(file_path, 'r') as file:
             return yaml.safe_load(file)   
 
-    def filter_data(self, filter_config=None):
-        
-        if not filter_config:
-            return self.data
+    def filter_data(self, filter_config=None):        
         
         if self.dataset_name:
-            filter_params = filter_config or {}
-            filter_config = {self.dataset_name: {"dataset_name": self.dataset_name, **filter_params}}
+            params = filter_config or {}
+            filter_config = {"dataset_name": self.dataset_name, **params}
+
+        if not filter_config:
+            return self.data                  
         
         filtered_data = []
-        for dataset, config in filter_config.items():
-            for item in self.data:
-                matches = all(
-                    item.get(key) in value and item.get("dataset_name")==dataset if isinstance(value, list) 
-                    else item.get(key) == value and item.get("dataset_name")==dataset
-                    for key, value in config.items()
-                )
-                if matches:
-                    filtered_data.append(item)
+        for item in self.data:
+            matches = all(
+                item.get(key) in value if isinstance(value, list) else item.get(key) == value
+                for key, value in filter_config.items()
+            )
+            if matches:
+                filtered_data.append(item)
         
         return filtered_data
+
+
+if __name__ == "__main__":
+    metainfo = DatasetManager().filter_data({"filename": "97"})
+    print(len(metainfo))
