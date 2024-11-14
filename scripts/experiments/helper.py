@@ -18,6 +18,7 @@ def get_counter(dataset, feature_mitigation):
 
 def grouper(dataset, feature_mitigation):
     if not feature_mitigation:
+        print('Group by: none')
         # If `feature_mitigation` is empty, return a default group for all items
         return [0] * len(dataset)
     
@@ -40,6 +41,7 @@ def grouper(dataset, feature_mitigation):
                 hash[feature_value] = len(hash)
             groups.append(hash[feature_value])
 
+    print('Group by: ',feature_mitigation )
     print('Groups:', set(groups))
     print('Counter:', counter)
     print('Hash:', hash)

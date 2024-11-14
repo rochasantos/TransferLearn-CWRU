@@ -169,7 +169,7 @@ def one_fold_without_bias(model, dataset, num_epochs, lr, class_names):
     print_confusion_matrix(cm, class_names)
     
 def kfold_cross_validation(model, dataset, num_epochs, lr, group_by="", class_names=[], n_splits=4):
-    """Performs K-Fold Cross-Validation with optional grouping on the provided dataset."""
+    """Performs K-Fold Cross-Validation for ViT models with optional grouping on the provided dataset."""
     batch_size = 32
     X = np.arange(len(dataset))
     y = dataset.targets  # Class labels for stratification
@@ -180,6 +180,7 @@ def kfold_cross_validation(model, dataset, num_epochs, lr, group_by="", class_na
         skf = StratifiedGroupKFold(n_splits=n_splits)
         split = skf.split(X, y, groups)
     else:
+        print('Group by: none')
         skf = StratifiedKFold(n_splits=n_splits)
         split = skf.split(X, y)
 
@@ -187,13 +188,14 @@ def kfold_cross_validation(model, dataset, num_epochs, lr, group_by="", class_na
     initial_state = model.state_dict()
     fold_accuracies = []
 
+    print('LR: ', lr)
     print('Starting K-Fold Cross-Validation Loop...')   
     # K-Fold Cross-Validation Loop
     for fold, (train_idx, test_idx) in enumerate(split):
         print(f"\nStarting Fold {fold + 1}")
 
         # Skip this fold if the test split is empty
-        if len(test_idx) == 0:
+        if len(test_idx) == 0 or len(train_idx) == 0:
             print(f"Skipping Fold {fold + 1} as the test set is empty.")
             continue
 
@@ -202,8 +204,9 @@ def kfold_cross_validation(model, dataset, num_epochs, lr, group_by="", class_na
         test_loader = DataLoader(Subset(dataset, test_idx), batch_size=batch_size, shuffle=False)
 
         # Reset model to initial state and move to GPU
+        print("Initial weight sample before reset:",  model.vit.classifier.weight[0][:5])  # Example layer and slice
         model.load_state_dict(initial_state)
-        model = model.to('cuda')
+        print("Initial weight sample after reset:",  model.vit.classifier.weight[0][:5])
 
         # Define loss and optimizer
         criterion = nn.CrossEntropyLoss()

@@ -62,6 +62,7 @@ def train_and_save(model, train_loader, num_epochs, lr=0.001, save_path="vit_cla
 # To reload the trained model later
 def load_trained_model(model_class, save_path, num_classes=4):
     # Instantiate model with specified num_classes
-    model = model_class(num_classes=num_classes)
+    model = model_class(num_classes=num_classes) 
     model.load_state_dict(torch.load(save_path, weights_only=True))  # Add weights_only=True
+    
     return model

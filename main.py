@@ -2,7 +2,6 @@ from datasets import CWRU, UORED, Paderborn, Hust
 from scripts.create_spectrograms import create_spectrograms
 from src.preprocessing import PreprocessingPipeline, ResamplingStrategy, NormalizationStrategy
 from src.data_processing import DatasetManager
-from scripts.experiments.kfold import kfold
 from src.models import CNN2D, ResNet18, ViTClassifier
 from scripts.experiments.modelvalidation import resubstitution_test, one_fold_with_bias, one_fold_without_bias, kfold_cross_validation
 from src.models.vitclassifier import train_and_save, load_trained_model
@@ -11,6 +10,20 @@ from torchvision import transforms
 from src.data_processing.dataset import SpectrogramImageDataset
 from torch.utils.data import DataLoader, Subset
 import numpy as np
+from utils.dual_output import DualOutput  # Import the class from dual_output.py
+from datetime import datetime
+import sys
+import os
+
+# Create logs directory if it doesn't exist
+os.makedirs("logs", exist_ok=True)
+
+# Generate a timestamped log file name
+timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+log_filename = f"logs/experiment_log_{timestamp}.txt"
+
+# Redirect stdout
+sys.stdout = DualOutput(log_filename)
 
 # SPECTROGRAMS
 def run_create_spectrograms():
@@ -62,20 +75,18 @@ def run_experimenter():
     vit_train_dataloader = DataLoader(vit_train_dataset, batch_size=32, shuffle=True)
     
     # Instantiate the ViTClassifier and train it with dataset2 to narrow the model context
-    #model = ViTClassifier().to("cuda")
-    #train_and_save(model, vit_train_dataloader, num_epochs_vit_train, lr_vit_train, save_path)  # Train and save the model
+    # model = ViTClassifier().to("cuda")
+    # train_and_save(model, vit_train_dataloader, num_epochs_vit_train, lr_vit_train, save_path)  # Train and save the model
 
     # Load the trained model for testing/evaluation
     model = load_trained_model(ViTClassifier, save_path, num_classes=len(class_names)).to("cuda")
-
-    #Xidx = np.arange(len(dataset1))  # get index from spectrograms
-    #y = dataset1.targets  # class tags
-    #print(X)
     
-    num_epochs = 5
+    num_epochs = 10
     lr = 0.001
     #group_by = "rpm" 
     #group_by = "extent_damage"
+    #group_by = "condition_bearing_health"
+    #group_by = "damage_method"
     group_by = ""
     
     #resubstitution_test(model, dataset2, num_epochs, lr, class_names)               # Resubstitution error validation
@@ -90,3 +101,9 @@ if __name__ == '__main__':
     #download_rawfile('UORED')
     #run_create_spectrograms()
     run_experimenter()
+
+
+
+    # Close the log file
+    sys.stdout.close()
+    sys.stdout = sys.__stdout__  # Reset stdout to the original
