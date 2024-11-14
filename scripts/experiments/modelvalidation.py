@@ -1,7 +1,9 @@
 import numpy as np
+import copy
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from torch.optim import Adam
 from torch.utils.data import DataLoader, Subset
 from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn.model_selection import train_test_split
@@ -185,7 +187,8 @@ def kfold_cross_validation(model, dataset, num_epochs, lr, group_by="", class_na
         split = skf.split(X, y)
 
     # Save initial model state for reinitialization before each fold
-    initial_state = model.state_dict()
+    #initial_state = model.state_dict()
+    initial_state = copy.deepcopy(model.state_dict())
     fold_accuracies = []
 
     print('LR: ', lr)
@@ -205,12 +208,14 @@ def kfold_cross_validation(model, dataset, num_epochs, lr, group_by="", class_na
 
         # Reset model to initial state and move to GPU
         print("Initial weight sample before reset:",  model.vit.classifier.weight[0][:5])  # Example layer and slice
-        model.load_state_dict(initial_state)
+        model.load_state_dict(copy.deepcopy(initial_state))
         print("Initial weight sample after reset:",  model.vit.classifier.weight[0][:5])
-
-        # Define loss and optimizer
+        
+        # Reinitialize the optimizer for each fold
+        optimizer = Adam(model.parameters(), lr)  # Reset optimizer
+        
+        # Define loss
         criterion = nn.CrossEntropyLoss()
-        optimizer = optim.Adam(model.parameters(), lr)
 
         # Training Loop
         model.train()
