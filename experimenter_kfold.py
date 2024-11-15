@@ -10,10 +10,10 @@ from utils.print_info import print_info
 
 def experimenter():
     # Getting a model factory
-    model_factory = ModelFactory(CNN2D)
+    model = CNN2D()
 
     # Training parameters 
-    num_epochs = 5
+    num_epochs = 40
     learning_rate = 0.001
     batch_size = 32
 
@@ -40,7 +40,7 @@ def experimenter():
     # Experiment log
     experiment_title = "KFold"
     print_info("Experiment", [experiment_title.lower()])
-    print_info("\nModel", [str(model_factory.create_model())])
+    print_info("\nModel", str(model))
     print_info("\nTrain Parameters", [
          f"num_epochs: {num_epochs}",
          f"learning_rate: {learning_rate}",
@@ -51,7 +51,7 @@ def experimenter():
     print("")
 
     # Running the experiment 
-    kfold(model_factory, fold_split_sequence, num_epochs, learning_rate, batch_size)
+    kfold(model, fold_split_sequence, num_epochs, learning_rate, batch_size)
 
 
 if __name__ == "__main__":
