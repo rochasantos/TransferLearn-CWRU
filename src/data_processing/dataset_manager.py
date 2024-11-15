@@ -1,5 +1,4 @@
 import csv
-import re
 import yaml
 
 class DatasetManager:
@@ -40,8 +39,3 @@ class DatasetManager:
                 filtered_data.append(item)
         
         return filtered_data
-
-
-if __name__ == "__main__":
-    metainfo = DatasetManager().filter_data({"filename": "97"})
-    print(len(metainfo))
