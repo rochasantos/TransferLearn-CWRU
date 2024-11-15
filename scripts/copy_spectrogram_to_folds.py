@@ -11,9 +11,9 @@ def extension_fold_mapping(basename):
     "028": "fold4" }
 
 def copy_spectrogram_to_folds():
-    metainfo = DatasetManager("CWRU")
-    
+    metainfo = DatasetManager("CWRU")    
     root_dir = "data/spectrograms/cwru/"
+    print("Copying files from the 'data/spectrograms/cwru directory' to the folds in the 'data/spectrograms/cwru_cv' directory")
     for label in ["N", "I", "O", "B"]:
         list_of_files = list_files(root_dir+label, extension=".png")
 
@@ -24,4 +24,6 @@ def copy_spectrogram_to_folds():
             fold = extension_fold_mapping(basename)[extent_damage]
             source_path = os.path.join(root_dir, label, file)
             destination_path = os.path.join("data/spectrograms/cwru_cv", fold, label, file)
+            if os.path.exists(destination_path):
+                continue
             copy_file(source_path, destination_path)
