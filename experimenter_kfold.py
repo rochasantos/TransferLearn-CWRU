@@ -17,13 +17,26 @@ def experimenter():
     learning_rate = 0.001
     batch_size = 32
 
-    # Define the experiment setup.    
+    # Define the experiment setup.
+    # resubstitution
+    fold_split_sequence = [
+        {"train": (1,), "test": (1,)},
+        {"train": (2,), "test": (2,)},
+        {"train": (3,), "test": (3,)},
+        {"train": (4,), "test": (4,)},
+    ]
+
+    # kfold
+    """
     fold_split_sequence = [
         {"train": (2, 3, 4), "test": (1,)},
         {"train": (1, 3, 4), "test": (2,)},
         {"train": (1, 2, 4), "test": (3,)},
         {"train": (1, 2, 3), "test": (4,)},
     ]
+    """
+    # Define your custom experiment configuration
+    # Here
 
     # Log
     experiment_title = "Sequential Cross-Validation Leave-P-Out"
