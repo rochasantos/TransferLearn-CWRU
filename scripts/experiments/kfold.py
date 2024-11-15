@@ -69,6 +69,7 @@ def kfold(model_factory, fold_split_sequence, num_epochs=50, learning_rate=0.001
             cm = confusion_matrix(fold_true_labels, fold_predicted_labels, labels=class_indexes)
             print(class_names)
             print(cm)
+            print("")
 
     total_accuracy_mean = sum(total_accuracy) / len(total_accuracy)
     print(f'\nTotal Accuracy Mean: {total_accuracy_mean:.2f}%')

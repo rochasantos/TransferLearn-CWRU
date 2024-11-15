@@ -35,11 +35,9 @@ def experimenter():
         {"train": (1, 2, 3), "test": (4,)},
     ]
     """
-    # Define your custom experiment configuration
-    # Here
 
-    # Log
-    experiment_title = "Sequential Cross-Validation Leave-P-Out"
+    # Experiment log
+    experiment_title = "Resubstitution"
     print_info("Experiment", [experiment_title])
     print_info("\nModel", [str(model_factory.create_model())])
     print_info("\nTrain Parameters", [
