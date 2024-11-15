@@ -19,14 +19,10 @@ def create_spectrograms():
     # Creation of spectrograms    
     create_cwru_spectrogram(preprocessing_pipeline, num_segments) 
 
-# Copies the files to their corresponding folds.
-def copy_spectrograms_to_folds():                    
-    copy_spectrogram_to_folds()
-
 
 if __name__ == '__main__':
     sys.stdout = LoggerWriter(logging.info)
     download_rawfile('CWRU')
     create_spectrograms()
-    copy_spectrograms_to_folds()
+    copy_spectrogram_to_folds()
     
