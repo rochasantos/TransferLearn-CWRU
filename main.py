@@ -1,28 +1,42 @@
-import sys
-import logging
-from utils.logginout import LoggerWriter
-
-from datasets import CWRU, UORED, Paderborn, Hust
-from src.preprocessing import PreprocessingPipeline, ResamplingStrategy
 from scripts.download_rawfile import download_rawfile
-from scripts.spectrograms import create_cwru_spectrogram
+from scripts.spectrograms import generate_spectrogram
 from scripts.copy_spectrogram_to_folds import copy_spectrogram_to_folds
+from src.data_processing.dataset_manager import DatasetManager
+from utils import load_yaml
+
+
+# DOWNLOAD RAW FILES
+def download():
+    for dataset in ["CWRU", "Hust", "UORED", "Paderborn"]:
+        download_rawfile(dataset)
 
 # SPECTROGRAMS
 def create_spectrograms():
+
+    # Sets the number of segments
     num_segments = 20
 
-    # Creates the preprocessing pipeline and add the strategies to the pipeline
-    preprocessing_pipeline = PreprocessingPipeline()
-    # preprocessing_pipeline.add_step(ResamplingStrategy())
+    # Load the configuration files
+    spectrogram_config = load_yaml('config/spectrogram_config.yaml')
+    filter_config = load_yaml('config/filters_config.yaml')
+    
+    # Instantiate the data manager
+    data_manager = DatasetManager()
+        
+    for dataset_name in spectrogram_config.keys():
+        print(f"Starting the creation of the {dataset_name} spectrograms.")
+        filter = filter_config[dataset_name]
+        metainfo = data_manager.filter_data(filter)
 
-    # Creation of spectrograms    
-    create_cwru_spectrogram(preprocessing_pipeline, num_segments) 
+        signal_length = spectrogram_config[dataset_name]["Split"]["signal_length"]
+        spectrogram_setup = spectrogram_config[dataset_name]["Spectrogram"]
+        
+        # Creation of spectrograms    
+        generate_spectrogram(metainfo, spectrogram_setup, signal_length, num_segments) 
 
 
 if __name__ == '__main__':
-    sys.stdout = LoggerWriter(logging.info)
-    download_rawfile('CWRU')
+    download()
     create_spectrograms()
     copy_spectrogram_to_folds()
     
