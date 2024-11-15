@@ -1,3 +1,5 @@
 from scripts.download_rawfile import download_rawfile
 from scripts.create_spectrograms import create_spectrograms
 from scripts.run_experiments import run_experiments
+from .train_model import train_model
+from .evaluate_model import evaluate_model

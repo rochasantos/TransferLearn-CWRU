@@ -19,6 +19,7 @@ def experimenter():
 
     # Define the experiment setup.
     # resubstitution
+    """
     fold_split_sequence = [
         {"train": (1,), "test": (1,)},
         {"train": (2,), "test": (2,)},
@@ -26,19 +27,19 @@ def experimenter():
         {"train": (4,), "test": (4,)},
     ]
 
-    # kfold
     """
+    # kfold
     fold_split_sequence = [
         {"train": (2, 3, 4), "test": (1,)},
         {"train": (1, 3, 4), "test": (2,)},
         {"train": (1, 2, 4), "test": (3,)},
         {"train": (1, 2, 3), "test": (4,)},
     ]
-    """
+    # """
 
     # Experiment log
-    experiment_title = "Resubstitution"
-    print_info("Experiment", [experiment_title])
+    experiment_title = "KFold"
+    print_info("Experiment", [experiment_title.lower()])
     print_info("\nModel", [str(model_factory.create_model())])
     print_info("\nTrain Parameters", [
          f"num_epochs: {num_epochs}",
