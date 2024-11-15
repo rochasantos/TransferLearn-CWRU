@@ -5,44 +5,16 @@ from torch.utils.data import DataLoader, Subset
 from torchvision import models, transforms
 import numpy as np
 import copy
-from src.data_processing.dataset import SpectrogramImageDataset
+# from src.data_processing.dataset import SpectrogramImageDataset
 from src.data_processing import DatasetManager
 from sklearn.model_selection import StratifiedGroupKFold
 from scripts.experiments.helper import grouper
 from sklearn.metrics import confusion_matrix
 
-# # Hiperparâmetros
-# num_epochs_pretrain = 20
-# num_epochs_finetune = 50
-# k_folds = 4
-# learning_rate_pretrain = 1e-3
-# learning_rate_finetune = 1e-4
 batch_size = 32
-
-# # Endereços para arquivos
-# root_dir = 'data/spectrograms'
-
-# filter_uored = {"UORED": {"label": ["N", "I", "O", "B"], "condition_bearing_health": ["faulty" , "healthy"]}}
-# filter_cwru = {"CWRU": {"label": ["N", "I", "O", "B"], "bearing_type": "6205"}}
-# file_info_uored = DatasetManager().filter_data(filter_uored)
-# file_info_cwru = DatasetManager().filter_data(filter_cwru)
-
-# # Transforms para imagens
-# transform = transforms.Compose([
-#     transforms.Resize((224, 224)),
-#     transforms.ToTensor(),
-#     transforms.Normalize(mean=[0.485, 0.456, 0.406],
-#                          std=[0.229, 0.224, 0.225]),
-# ])
-
-# # Carregar os datasets
 class_names = ['N', 'I', 'O', 'B']  # Your dataset class names
-# dataset_uored = SpectrogramImageDataset(root_dir, file_info_uored, class_names, transform)
 
-# # DataLoaders para pré-treinamento
-# dataloader_uored = DataLoader(dataset_uored, batch_size=batch_size, shuffle=True)
-
-# Função para treinar uma época
+# Function to train a epoch
 def train_epoch(model, dataloader, criterion, optimizer, device):
     model.train()
     running_loss = 0.0
@@ -56,27 +28,29 @@ def train_epoch(model, dataloader, criterion, optimizer, device):
         running_loss += loss.item()
     return running_loss / len(dataloader)
 
-# Pré-treinamento das camadas intermediárias
-def pretrain_model(model, dataloader1, dataloader2, num_epochs, learning_rate, device):
+# Pre-training of intermediate layers
+# def pretrain_model(model, dataloader1, dataloader2, num_epochs, learning_rate, device):
+def pretrain_model(model, dataloader1, num_epochs, learning_rate, device):
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
     criterion = nn.CrossEntropyLoss()
     
-    # Congelar primeiras camadas
+    # Freeze layers
     for name, param in model.named_parameters():
-        if "layer4" in name or "fc" in name:
+        if "layer4" in name in name or "fc" in name:
             param.requires_grad = True
         else:
             param.requires_grad = False
     
-    # Alternar entre os dois datasets
+    # Switch between the two datasets
     for epoch in range(num_epochs):
         loss1 = train_epoch(model, dataloader1, criterion, optimizer, device)
-        loss2 = train_epoch(model, dataloader2, criterion, optimizer, device)
-        print(f'Epoch {epoch+1}/{num_epochs}, Loss Dataset 1: {loss1:.4f}, Loss Dataset 2: {loss2:.4f}')
+        # loss2 = train_epoch(model, dataloader2, criterion, optimizer, device)
+        # print(f'Epoch {epoch+1}/{num_epochs}, Loss Dataset 1: {loss1:.4f}, Loss Dataset 2: {loss2:.4f}')
+        print(f'Epoch {epoch+1}/{num_epochs}, Loss Dataset 1: {loss1:.4f}')
+
 
 def print_confusion_matrix(cm, class_names):
     """Displays the confusion matrix in the console."""
-    print("Confusion Matrix:")
     print(f"{'':<3}" + "".join(f"{name:<5}" for name in class_names))
     for i, row in enumerate(cm):
         print(f"{class_names[i]:<3}" + "".join(f"{val:<5}" for val in row))
@@ -108,22 +82,22 @@ def k_fold_finetune(model, dataset, num_folds, num_epochs, learning_rate, device
         else:
             model.load_state_dict(initial_state)
         
-        # Descongelar as últimas camadas para fine-tuning
+        # Freeze and unfreeze layers for fine-tuning
         for name, param in model.named_parameters():
             if "layer4" in name or "fc" in name:
                 param.requires_grad = True
             else:
                 param.requires_grad = False
         
-        # Definir otimizador
+        # Set optimizer
         optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=learning_rate)
         
-        # Treinamento para o fold atual
+        # Training for the current fold
         for epoch in range(num_epochs):
             train_loss = train_epoch(model, train_loader, criterion, optimizer, device)
             print(f'Fold {fold+1}, Epoch {epoch+1}/{num_epochs}, Train Loss: {train_loss:.4f}')
             
-        # Avaliação do fold atual
+        # Evaluation of the current fold
         model.eval()
         val_loss, correct = 0.0, 0
         all_preds = []
