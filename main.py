@@ -42,8 +42,8 @@ def run_create_spectrograms():
 # EXPERIMENTERS
 def run_experimenter():
     #model = ResNet18() 
-    num_epochs_vit_train = 40
-    lr_vit_train = 0.001
+    num_epochs_vit_train = 20
+    lr_vit_train = 0.0002
     save_path = "vit_classifier.pth"  # Define path to save the ViT trained model
         
     dataset_manager = DatasetManager()
@@ -53,8 +53,8 @@ def run_experimenter():
 
     transform = transforms.Compose([
         # transforms.Resize((516, 516)),  
-        transforms.ToTensor()          
-    ])
+        transforms.ToTensor(),
+     ])
 
     # The dataset1 = CWRU
     class_names = ['N', 'I', 'O', 'B']  # Your dataset class names
@@ -69,25 +69,28 @@ def run_experimenter():
  
     dataset1 = dataset_CWRU
     dataset2 = dataset_UORED
+    
+    print("Train dataset:" ,dataset2.get_dataset_name())
+    print("Test dataset:" ,dataset1.get_dataset_name())
  
     # Train ViTClassifier with dataset2 = UORED
     vit_train_dataset = dataset2
     vit_train_dataloader = DataLoader(vit_train_dataset, batch_size=32, shuffle=True)
     
     # Instantiate the ViTClassifier and train it with dataset2 to narrow the model context
-    # model = ViTClassifier().to("cuda")
-    # train_and_save(model, vit_train_dataloader, num_epochs_vit_train, lr_vit_train, save_path)  # Train and save the model
+    #model = ViTClassifier().to("cuda")
+    #train_and_save(model, vit_train_dataloader, num_epochs_vit_train, lr_vit_train, save_path)  # Train and save the model
 
     # Load the trained model for testing/evaluation
     model = load_trained_model(ViTClassifier, save_path, num_classes=len(class_names)).to("cuda")
     
     num_epochs = 10
-    lr = 0.001
-    #group_by = "rpm" 
+    lr = 0.002
+    group_by = "rpm" 
     #group_by = "extent_damage"
     #group_by = "condition_bearing_health"
     #group_by = "damage_method"
-    group_by = ""
+    #group_by = ""
     
     #resubstitution_test(model, dataset2, num_epochs, lr, class_names)               # Resubstitution error validation
     #one_fold_with_bias(model, dataset1, num_epochs, lr, class_names)                # Train and test with 1 fold and bias

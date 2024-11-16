@@ -3,7 +3,7 @@ import copy
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.optim import Adam
+from torch.optim import Adam, AdamW
 from torch.utils.data import DataLoader, Subset
 from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn.model_selection import train_test_split
@@ -212,7 +212,18 @@ def kfold_cross_validation(model, dataset, num_epochs, lr, group_by="", class_na
         print("Initial weight sample after reset:",  model.vit.classifier.weight[0][:5])
         
         # Reinitialize the optimizer for each fold
-        optimizer = Adam(model.parameters(), lr)  # Reset optimizer
+  
+        # Layer-Wise Learning Rate Decay (LRD)
+        # Layers closer to the output layer receive a higher learning rate than those closer to the input.
+        # This can help preserve the pre-trained representations.
+        optimizer = AdamW(
+            [
+                {"params": model.vit.vit.parameters(), "lr": lr * 0.1},  # Transformer encoder layers
+                {"params": model.vit.classifier.parameters(), "lr": lr}  # Classification head
+            ],
+            lr=lr,
+            weight_decay=0.01
+        )
         
         # Define loss
         criterion = nn.CrossEntropyLoss()

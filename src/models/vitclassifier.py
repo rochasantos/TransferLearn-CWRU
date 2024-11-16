@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from transformers import ViTForImageClassification, ViTConfig, ViTImageProcessor
+from torchvision.transforms import ToPILImage
 
 class ViTClassifier(nn.Module):
     def __init__(self, num_classes=4):
@@ -24,8 +25,12 @@ class ViTClassifier(nn.Module):
 
 
     def forward(self, x):
+        # Convert tensors back to PIL images for compatibility with ViTImageProcessor
+        to_pil = ToPILImage()
+        images = [to_pil(img) for img in x]
+
         # Preprocess images with the processor for ViT compatibility
-        inputs = self.processor(images=x, return_tensors="pt").pixel_values.to(x.device)
+        inputs = self.processor(images=images, return_tensors="pt").pixel_values.to(x.device)
 
         # Forward pass through the model
         output = self.vit(pixel_values=inputs)
@@ -40,6 +45,9 @@ def train_and_save(model, train_loader, num_epochs, lr=0.001, save_path="vit_cla
     optimizer = torch.optim.Adam(model.parameters(), lr)
     
     print('Starting VitClassifier Training...')
+    print("Training dataset >>>" ,train_loader.dataset.get_dataset_name())
+    print("LR:" ,lr)
+    print("Num Epochs:" ,num_epochs)
     model.train()
     for epoch in range(num_epochs):
         running_loss = 0.0
