@@ -1,8 +1,15 @@
 import numpy as np
 import copy
 import torch
+import cv2
 import torch.nn as nn
 import torch.optim as optim
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from datetime import datetime
+import sys
+import os
+from src.data_processing import SpectrogramImageDataset
 from torch.optim import Adam, AdamW
 from torch.utils.data import DataLoader, Subset
 from sklearn.metrics import accuracy_score, confusion_matrix
@@ -235,8 +242,8 @@ def kfold_cross_validation(model, dataset, num_epochs, lr, group_by="", class_na
             for images, labels in train_loader:
                 images, labels = images.to('cuda'), labels.to('cuda')
                 optimizer.zero_grad()
-                outputs = model(images)
-                loss = criterion(outputs, labels)
+                logits, attentions = model(images)
+                loss = criterion(logits, labels)
                 loss.backward()
                 optimizer.step()
                 total_loss += loss.item()
@@ -249,10 +256,20 @@ def kfold_cross_validation(model, dataset, num_epochs, lr, group_by="", class_na
         model.eval()
         all_labels, all_predictions = [], []
         with torch.no_grad():
-            for images, labels in test_loader:
+            for idx, (images, labels) in enumerate(test_loader):
                 images, labels = images.to('cuda'), labels.to('cuda')
-                outputs = model(images)
-                _, predicted = torch.max(outputs, 1)
+                logits, attentions = model(images) 
+                # Visualize attention for the first 5 samples
+                if idx < 5:
+                    visualize_attention(
+                        dataset=dataset,
+                        model=model,
+                        idx=idx,
+                        attentions=attentions,
+                        head=0,  # Visualize first attention head
+                        layer=-1  # Visualize last attention layer
+                    )
+                _, predicted = torch.max(logits, 1)
                 all_labels.extend(labels.cpu().numpy())
                 all_predictions.extend(predicted.cpu().numpy())
 
@@ -275,3 +292,92 @@ def kfold_cross_validation(model, dataset, num_epochs, lr, group_by="", class_na
         print(f"\nMean Cross-Validation Accuracy: {mean_accuracy:.2f}%")
     else:
         print("No valid folds with test data to compute cross-validation accuracy.")
+        
+        
+def visualize_attention(dataset, model, idx, attentions, head=0, layer=-1):
+    """
+    Visualize attention maps for a spectrogram from the dataset.
+    Args:
+        dataset (Dataset): The spectrogram dataset (SpectrogramImageDataset).
+        model (ViTClassifier): The trained Vision Transformer model.
+        idx (int): Index of the spectrogram in the dataset.
+        attentions: Attention outputs from the model.
+        head (int): Attention head to visualize.
+        layer (int): Layer to extract attention from (-1 for the last layer).
+    """
+    # Retrieve the spectrogram and label
+    spectrogram, label = dataset[idx]
+    
+    # Convert the spectrogram to a tensor and preprocess it
+    image_tensor = spectrogram.unsqueeze(0).to(model.device)  # Already transformed
+
+    # Forward pass through the model to get attentions
+    logits, attentions = model(image_tensor)
+
+    # Extract the attention map for the specified layer and head
+    attention_map = attentions[layer][0, head, :, :]  # Shape: [seq_len, seq_len]
+
+    # Average over rows (token queries)
+    aggregated_attention = attention_map.mean(dim=0).detach().cpu().numpy()
+
+    # Reshape the attention map to match spectrogram dimensions
+    height, width = image_tensor.shape[-2], image_tensor.shape[-1]
+    attention_resized = cv2.resize(aggregated_attention, (width, height), interpolation=cv2.INTER_LINEAR)
+
+    # Normalize the attention map for visualization
+    attention_resized = (attention_resized - np.percentile(attention_resized, 5)) / (
+        np.percentile(attention_resized, 95) - np.percentile(attention_resized, 5)
+    )
+    # attention_resized = np.clip(attention_resized, 0, 1)
+    # attention_resized = (attention_resized - attention_resized.min()) / (attention_resized.max() - attention_resized.min())
+
+    # Convert spectrogram to numpy for visualization
+    spectrogram_np = np.asarray(spectrogram)
+    if spectrogram_np.shape[0] == 3:  # Check if it's an RGB image
+        spectrogram_np = np.transpose(spectrogram_np, (1, 2, 0))  # Convert to HWC format
+
+    vmin = np.percentile(attention_resized, 5)
+    vmax = np.percentile(attention_resized, 95)
+    
+    # print("Spectrogram min and max:", spectrogram_np.min(), spectrogram_np.max())
+    # print("Attention map min and max:", attention_resized.min(), attention_resized.max())
+    
+    # Plot spectrogram and attention map side-by-side
+    fig, axs = plt.subplots(1, 2, figsize=(18, 8))
+    fig.suptitle(f"Attention Visualization for Sample {idx} - {label}", fontsize=16)
+
+    # Spectrogram
+    axs[0].imshow(spectrogram_np, cmap="gray", aspect='auto')  # Force auto aspect ratio
+    #axs[0].imshow(attention_resized, cmap="plasma", alpha=0.5, aspect="auto") #Overlay attention on spectrogram
+    axs[0].set_title("Original Spectrogram", fontsize=14)
+    axs[0].set_ylabel("Frequency (Hz)", fontsize=12)
+    axs[0].set_xlabel("Time (s)", fontsize=12)
+    axs[0].axis("on")  # Ensure axes are shown
+
+    # Attention Map
+    im = axs[1].imshow(attention_resized, cmap="plasma", aspect='auto', vmin=0, vmax=1)
+    threshold = 0.7  # High attention threshold
+    binary_mask = attention_resized > threshold
+    axs[1].contour(binary_mask, colors="red", linewidths=0.5) #.contour(attention_resized, levels=5, colors="white", linewidths=0.5)  
+    #axs[1].contour(binary_mask, levels=5, colors="white", linewidths=0.5)
+    axs[1].set_title("Attention Map", fontsize=14)
+    axs[1].set_ylabel("Attention Head Tokens", fontsize=12)
+    axs[1].set_xlabel("Sequence Tokens", fontsize=12)
+
+    # Colorbar
+    cbar = fig.colorbar(im, ax=axs[1], fraction=0.046, pad=0.04)
+    cbar.set_label("Attention Weight", fontsize=12, rotation=270, labelpad=20)
+
+    # Layout adjustment
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    
+    # Save the figure to the logs folder
+    timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+    log_folder = "logs"
+    os.makedirs(log_folder, exist_ok=True)  # Ensure logs folder exists
+    file_name = f"{log_folder}/experiment_log_{timestamp}_{idx}.png"
+    fig.savefig(file_name, bbox_inches="tight",dpi=300)  # Save the figure using fig object
+
+    plt.show()
+    plt.close(fig)  # Explicitly close the figure to free memory
+    print(f"Saved attention visualization to {file_name}")

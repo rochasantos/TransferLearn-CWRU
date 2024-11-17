@@ -17,7 +17,9 @@ class ViTClassifier(nn.Module):
         self.vit = ViTForImageClassification.from_pretrained(
             "google/vit-base-patch16-224",
             num_labels=num_classes,
-            ignore_mismatched_sizes=True  # To handle mismatched classifier layer size
+            output_attentions=True, # Enable attention outputs
+            ignore_mismatched_sizes=True,  # To handle mismatched classifier layer size
+            attn_implementation="eager"  # Explicitly specify the attention implementation
         )
         
         # Manually adjust the classifier layer if necessary
@@ -34,7 +36,8 @@ class ViTClassifier(nn.Module):
 
         # Forward pass through the model
         output = self.vit(pixel_values=inputs)
-        return output.logits  # Return only logits
+        return output.logits, output.attentions  # Return logits and attention weights
+
     
 # To train and save the model after training
 def train_and_save(model, train_loader, num_epochs, lr=0.001, save_path="vit_classifier.pth"):
