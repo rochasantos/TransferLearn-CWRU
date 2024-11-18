@@ -58,8 +58,8 @@ def train_and_save(model, train_loader, num_epochs, lr=0.001, save_path="vit_cla
             images, labels = images.to(model.device), labels.to(model.device)
             
             optimizer.zero_grad()
-            outputs = model(images)
-            loss = criterion(outputs, labels)
+            logits, attentions = model(images)
+            loss = criterion(logits, labels)
             loss.backward()
             optimizer.step()
             running_loss += loss.item()

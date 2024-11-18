@@ -215,14 +215,35 @@ def kfold_cross_validation(model, dataset, num_epochs, lr, group_by="", class_na
             print(f"Skipping Fold {fold + 1} as the test set is empty.")
             continue
 
+        train_distribution = compute_class_distribution(train_idx, dataset, class_names)
+        test_distribution = compute_class_distribution(test_idx, dataset, class_names)
+
+        print(f"Fold {fold + 1} - Train Distribution: {train_distribution}")
+        print(f"Fold {fold + 1} - Test Distribution: {test_distribution}")
+
         # Prepare train and test loaders for the current fold
         train_loader = DataLoader(Subset(dataset, train_idx), batch_size=batch_size, shuffle=True)
         test_loader = DataLoader(Subset(dataset, test_idx), batch_size=batch_size, shuffle=False)
 
+        # Alternatively, analyze distributions from DataLoaders
+        train_labels = []
+        for _, labels in train_loader:
+            train_labels.extend(labels.cpu().numpy())
+
+        train_distribution_from_loader = {class_name: train_labels.count(i) for i, class_name in enumerate(class_names)}
+        print(f"Fold {fold + 1} - [debug] Train Distribution from Loader: {train_distribution_from_loader}")
+
+        test_labels = []
+        for _, labels in test_loader:
+            test_labels.extend(labels.cpu().numpy())
+
+        test_distribution_from_loader = {class_name: test_labels.count(i) for i, class_name in enumerate(class_names)}
+        print(f"Fold {fold + 1} - [debug] Test Distribution from Loader: {test_distribution_from_loader}")
+
         # Reset model to initial state and move to GPU
-        print("Initial weight sample before reset:",  model.vit.classifier.weight[0][:5])  # Example layer and slice
+        #debug print("Initial weight sample before reset:",  model.vit.classifier.weight[0][:5])  # Example layer and slice
         model.load_state_dict(copy.deepcopy(initial_state))
-        print("Initial weight sample after reset:",  model.vit.classifier.weight[0][:5])
+        #debug print("Initial weight sample after reset:",  model.vit.classifier.weight[0][:5])
         
         # Reinitialize the optimizer for each fold
   
@@ -266,7 +287,7 @@ def kfold_cross_validation(model, dataset, num_epochs, lr, group_by="", class_na
                 images, labels = images.to('cuda'), labels.to('cuda')
                 logits, attentions = model(images) 
                 # Visualize attention for the first 5 samples
-                if idx < 3:
+                if idx < 2:
                     visualize_attention(
                         dataset=dataset,
                         model=model,
@@ -325,6 +346,15 @@ def kfold_cross_validation(model, dataset, num_epochs, lr, group_by="", class_na
     else:
         print("No valid folds with test data to compute cross-validation accuracy.")
         
+
+# Compute and print class distribution for train and test splits
+def compute_class_distribution(indices, dataset, class_names):
+    """Helper function to compute class distribution for given indices."""
+    labels = [dataset.targets[i] for i in indices]
+    distribution = {class_name: 0 for class_name in class_names}
+    for label in labels:
+        distribution[class_names[label]] += 1
+    return distribution
         
 def visualize_attention(dataset, model, idx, attentions, head=0, layer=-1):
     """
