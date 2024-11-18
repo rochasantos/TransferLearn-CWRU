@@ -78,14 +78,14 @@ def run_experimenter():
     vit_train_dataloader = DataLoader(vit_train_dataset, batch_size=32, shuffle=True)
     
     # Instantiate the ViTClassifier and train it with dataset2 to narrow the model context
-    #model = ViTClassifier().to("cuda")
-    #train_and_save(model, vit_train_dataloader, num_epochs_vit_train, lr_vit_train, save_path)  # Train and save the model
+    model = ViTClassifier().to("cuda")
+    train_and_save(model, vit_train_dataloader, num_epochs_vit_train, lr_vit_train, save_path)  # Train and save the model
 
     # Load the trained model for testing/evaluation
     model = load_trained_model(ViTClassifier, save_path, num_classes=len(class_names)).to("cuda")
     
     num_epochs = 10
-    lr = 0.002
+    lr = 0.001
     group_by = "rpm" 
     #group_by = "extent_damage"
     #group_by = "condition_bearing_health"

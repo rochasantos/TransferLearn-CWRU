@@ -12,18 +12,24 @@ import os
 from src.data_processing import SpectrogramImageDataset
 from torch.optim import Adam, AdamW
 from torch.utils.data import DataLoader, Subset
-from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score, f1_score, classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import StratifiedShuffleSplit, StratifiedGroupKFold, StratifiedKFold
 from scripts.experiments.helper import grouper 
 
-def print_confusion_matrix(cm, class_names):
+def print_confusion_matrix(cm, class_names, all_labels, all_predictions):
     """Displays the confusion matrix in the console."""
+    # Ensure alignment between labels and predictions
+    cm = confusion_matrix(
+        all_labels,
+        all_predictions,
+        labels=np.arange(len(class_names))  # Explicitly use all expected class labels
+    )
     print("Confusion Matrix:")
-    print(f"{'':<5}" + "".join(f"{name:<5}" for name in class_names))
+    print("     " + "    ".join(class_names))
     for i, row in enumerate(cm):
-        print(f"{class_names[i]:<3}" + "".join(f"{val:<5}" for val in row))
-
+        print(f"{class_names[i]:<4}" + "  ".join(f"{val:4}" for val in row))
+    
 def resubstitution_test(model, dataset, num_epochs, lr, class_names):
     # Set up data loader
     dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
@@ -71,7 +77,7 @@ def resubstitution_test(model, dataset, num_epochs, lr, class_names):
     print(f'Resubstitution Accuracy: {accuracy:.2f}%')
     #print('Confusion Matrix:\n', cm)
     print(dataset.get_dataset_name())
-    print_confusion_matrix(cm, class_names)
+    print_confusion_matrix(cm, class_names, all_labels, all_predictions)
 
 def one_fold_with_bias(model, dataset, num_epochs, lr, class_names):
     # Split the data with bias (random train-test split)
@@ -122,7 +128,7 @@ def one_fold_with_bias(model, dataset, num_epochs, lr, class_names):
     print(f'One-Fold (With Bias) Accuracy: {accuracy:.2f}%')
     #print('Confusion Matrix:\n', cm)
     print(dataset.get_dataset_name())
-    print_confusion_matrix(cm, class_names)
+    print_confusion_matrix(cm, class_names, all_labels, all_predictions)
 
 def one_fold_without_bias(model, dataset, num_epochs, lr, class_names):
     # Stratified split to reduce bias
@@ -175,7 +181,7 @@ def one_fold_without_bias(model, dataset, num_epochs, lr, class_names):
     print(f'One-Fold (Without Bias) Accuracy: {accuracy:.2f}%')
     #print('Confusion Matrix:\n', cm) 
     print(dataset.get_dataset_name())
-    print_confusion_matrix(cm, class_names)
+    print_confusion_matrix(cm, class_names, all_labels, all_predictions)
     
 def kfold_cross_validation(model, dataset, num_epochs, lr, group_by="", class_names=[], n_splits=4):
     """Performs K-Fold Cross-Validation for ViT models with optional grouping on the provided dataset."""
@@ -196,7 +202,7 @@ def kfold_cross_validation(model, dataset, num_epochs, lr, group_by="", class_na
     # Save initial model state for reinitialization before each fold
     #initial_state = model.state_dict()
     initial_state = copy.deepcopy(model.state_dict())
-    fold_accuracies = []
+    fold_metrics = []  # Store metrics for all folds
 
     print('LR: ', lr)
     print('Starting K-Fold Cross-Validation Loop...')   
@@ -260,7 +266,7 @@ def kfold_cross_validation(model, dataset, num_epochs, lr, group_by="", class_na
                 images, labels = images.to('cuda'), labels.to('cuda')
                 logits, attentions = model(images) 
                 # Visualize attention for the first 5 samples
-                if idx < 5:
+                if idx < 3:
                     visualize_attention(
                         dataset=dataset,
                         model=model,
@@ -276,20 +282,46 @@ def kfold_cross_validation(model, dataset, num_epochs, lr, group_by="", class_na
         # Check if there are predictions to evaluate
         if all_labels:
             accuracy = accuracy_score(all_labels, all_predictions) * 100
-            fold_accuracies.append(accuracy)
-            cm = confusion_matrix(all_labels, all_predictions)
-            print(f"Fold {fold + 1} Accuracy: {accuracy:.2f}%")
-            #print("Confusion Matrix:\n", cm)
-            print(dataset.get_dataset_name())
-            print_confusion_matrix(cm, class_names)
+            precision = precision_score(all_labels, all_predictions, average='weighted') * 100
+            recall = recall_score(all_labels, all_predictions, average='weighted') * 100
+            f1 = f1_score(all_labels, all_predictions, average='weighted') * 100
+
+            cm = confusion_matrix(all_labels, all_predictions, labels=np.arange(len(class_names)))
+            
+            print(f"Fold {fold + 1} Classification Report:")
+            report = classification_report(all_labels, 
+                                           all_predictions, 
+                                           target_names=class_names, 
+                                           labels=np.arange(len(class_names)), 
+                                           digits=4, 
+                                           zero_division=0)
+            print(report)
+            
+            print(f"Fold {fold + 1} Metrics:")
+            print(f"  - Accuracy: {accuracy:.2f}%")
+            print(f"  - Precision: {precision:.2f}%")
+            print(f"  - Recall: {recall:.2f}%")
+            print(f"  - F1-Score: {f1:.2f}%")
+                        
+            fold_metrics.append({
+                "accuracy": accuracy,
+                "precision": precision,
+                "recall": recall,
+                "f1": f1
+            })
+            print("\nDataset:", dataset.get_dataset_name())
+            print_confusion_matrix(cm, class_names, all_labels, all_predictions)
         else:
             print(f"No test data for evaluation in Fold {fold + 1}. Accuracy cannot be computed.")
 
     # Summary of cross-validation results
-    if fold_accuracies:
-        mean_accuracy = np.mean(fold_accuracies)
-        print(dataset.get_dataset_name())
-        print(f"\nMean Cross-Validation Accuracy: {mean_accuracy:.2f}%")
+    if fold_metrics:
+        mean_metrics = {key: np.mean([fold[key] for fold in fold_metrics]) for key in fold_metrics[0]}
+        print("\nCross-Validation Metrics Summary:")
+        print(f"  - Mean Accuracy: {mean_metrics['accuracy']:.2f}%")
+        print(f"  - Mean Precision: {mean_metrics['precision']:.2f}%")
+        print(f"  - Mean Recall: {mean_metrics['recall']:.2f}%")
+        print(f"  - Mean F1-Score: {mean_metrics['f1']:.2f}%")
     else:
         print("No valid folds with test data to compute cross-validation accuracy.")
         
@@ -347,18 +379,22 @@ def visualize_attention(dataset, model, idx, attentions, head=0, layer=-1):
     fig.suptitle(f"Attention Visualization for Sample {idx} - {label}", fontsize=16)
 
     # Spectrogram
-    axs[0].imshow(spectrogram_np, cmap="gray", aspect='auto')  # Force auto aspect ratio
+    spectrogram_im = axs[0].imshow(spectrogram_np, cmap="viridis", aspect='auto') # Force auto aspect ratio
     #axs[0].imshow(attention_resized, cmap="plasma", alpha=0.5, aspect="auto") #Overlay attention on spectrogram
     axs[0].set_title("Original Spectrogram", fontsize=14)
     axs[0].set_ylabel("Frequency (Hz)", fontsize=12)
     axs[0].set_xlabel("Time (s)", fontsize=12)
     axs[0].axis("on")  # Ensure axes are shown
 
+    # Add color bar for the spectrogram
+    cbar_spec = fig.colorbar(spectrogram_im, ax=axs[0], fraction=0.046, pad=0.04)
+    cbar_spec.set_label("Spectrogram Intensity", fontsize=12, rotation=270, labelpad=20)
+
     # Attention Map
     im = axs[1].imshow(attention_resized, cmap="plasma", aspect='auto', vmin=0, vmax=1)
     threshold = 0.7  # High attention threshold
     binary_mask = attention_resized > threshold
-    axs[1].contour(binary_mask, colors="red", linewidths=0.5) #.contour(attention_resized, levels=5, colors="white", linewidths=0.5)  
+    axs[1].contour(binary_mask, colors=['black', 'gray'], linewidths=0.3, linestyles='dotted') #.contour(attention_resized, levels=5, colors="white", linewidths=0.5)  
     #axs[1].contour(binary_mask, levels=5, colors="white", linewidths=0.5)
     axs[1].set_title("Attention Map", fontsize=14)
     axs[1].set_ylabel("Attention Head Tokens", fontsize=12)
