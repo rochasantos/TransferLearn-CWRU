@@ -1,11 +1,12 @@
+import numpy as np
+import copy
+import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader, Subset
-from torchvision import models, transforms
-import numpy as np
-import copy
-# from src.data_processing.dataset import SpectrogramImageDataset
+from torch.utils.data import DataLoader, ConcatDataset
+from torchvision import transforms
+from torchvision.datasets import ImageFolder
 from src.data_processing import DatasetManager
 from sklearn.model_selection import StratifiedGroupKFold
 from scripts.experiments.helper import grouper
@@ -30,20 +31,34 @@ def train_epoch(model, dataloader, criterion, optimizer, device):
 
 # Pre-training of intermediate layers
 # def pretrain_model(model, dataloader1, dataloader2, num_epochs, learning_rate, device):
-def pretrain_model(model, dataloader1, num_epochs, learning_rate, device):
+# def kfold(model, fold_split_sequence, num_epochs=50, learning_rate=0.001, batch_size=32, device="cuda"):
+def pretrain_model(model, datasets, num_epochs, learning_rate, device):
+
+    transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406],  std=[0.229, 0.224, 0.225])
+    ])
+    root_dir = "data/spectrograms"
+    train_datasets = [ImageFolder(os.path.join(root_dir, ds), transform) for ds in datasets]
+    train_concated_dataset = ConcatDataset(train_datasets)
+    dataloader = DataLoader(train_concated_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
+
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
     criterion = nn.CrossEntropyLoss()
     
     # Freeze layers
+    """
     for name, param in model.named_parameters():
         if "layer4" in name in name or "fc" in name:
             param.requires_grad = True
         else:
             param.requires_grad = False
-    
+    """
+
     # Switch between the two datasets
     for epoch in range(num_epochs):
-        loss1 = train_epoch(model, dataloader1, criterion, optimizer, device)
+        loss1 = train_epoch(model, dataloader, criterion, optimizer, device)
         # loss2 = train_epoch(model, dataloader2, criterion, optimizer, device)
         # print(f'Epoch {epoch+1}/{num_epochs}, Loss Dataset 1: {loss1:.4f}, Loss Dataset 2: {loss2:.4f}')
         print(f'Epoch {epoch+1}/{num_epochs}, Loss Dataset 1: {loss1:.4f}')

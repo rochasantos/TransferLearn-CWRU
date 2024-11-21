@@ -21,13 +21,12 @@ def create_spectrograms():
     filter_config = load_yaml('config/filters_config.yaml')
     
     # Instantiate the data manager
-    data_manager = DatasetManager()
         
     for dataset_name in spectrogram_config.keys():
         print(f"Starting the creation of the {dataset_name} spectrograms.")
         filter = filter_config[dataset_name]
+        data_manager = DatasetManager(dataset_name)
         metainfo = data_manager.filter_data(filter)
-
         signal_length = spectrogram_config[dataset_name]["Split"]["signal_length"]
         spectrogram_setup = spectrogram_config[dataset_name]["Spectrogram"]
         
@@ -36,7 +35,7 @@ def create_spectrograms():
 
 
 if __name__ == '__main__':
-    download()
+    # download()
     create_spectrograms()
-    copy_spectrogram_to_folds()
+    # copy_spectrogram_to_folds()
     

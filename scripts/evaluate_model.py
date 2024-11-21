@@ -1,5 +1,7 @@
 import torch
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, classification_report
+import numpy as np
+
 
 def evaluate_model(model, test_loader, dataset_class, device):
     correct = 0
@@ -28,8 +30,9 @@ def evaluate_model(model, test_loader, dataset_class, device):
     print(f'Confusion Matrix')
     class_indexes = list(range(len(dataset_class)))
     cm = confusion_matrix(fold_true_labels, fold_predicted_labels, labels=class_indexes)
+    cls_report = classification_report(fold_true_labels, fold_predicted_labels, digits=4)
     print(dataset_class)
     print(cm)
-    print("")
+    print(cls_report)
 
     return accuracy
