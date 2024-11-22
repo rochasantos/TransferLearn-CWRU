@@ -33,8 +33,8 @@ def run_create_spectrograms():
 
     # Creates the preprocessing pipeline and add the strategies to the pipeline
     preprocessing_pipeline = PreprocessingPipeline()
-    preprocessing_pipeline.add_step(ResamplingStrategy(target_sr=target_sr))
-    preprocessing_pipeline.add_step(NormalizationStrategy())
+    #preprocessing_pipeline.add_step(ResamplingStrategy(target_sr=target_sr))
+    #preprocessing_pipeline.add_step(NormalizationStrategy())
 
     # Creation of spectrograms    
     create_spectrograms(filter_config_path, preprocessing_pipeline, num_segments)                        
@@ -104,7 +104,7 @@ def run_experimenter():
 if __name__ == '__main__':
     #download_rawfile('CWRU')
     #download_rawfile('UORED')
-    #run_create_spectrograms()
+    run_create_spectrograms()
     run_experimenter()
 
 

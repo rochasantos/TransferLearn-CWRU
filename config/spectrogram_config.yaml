@@ -3,17 +3,21 @@ CWRU:
     nfft: 1600
     fs: 48000
     nperseg: 590
-    noverlap: 0
+    noverlap: 566
+    window: 'hann'
   Split:
     window_size: 12000
+    signal_length: 12000
 UORED:
   Spectrogram:
     nfft: 1600
-    fs: 48000
+    fs: 42000
     nperseg: 580
-    noverlap: 0
+    noverlap: 551
+    window: 'hann'
   Split:
     window_size: 580
+    signal_length: 10500
 
 # Hust:
 #   NFFT: 1600

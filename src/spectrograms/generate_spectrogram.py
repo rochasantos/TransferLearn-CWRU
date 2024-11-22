@@ -14,16 +14,26 @@ def generate_spectrogram(data, output_basename, window_size, spec_params, num_se
         if os.path.exists(output):
             continue        
         segment = data[i:i + window_size]
-        # Calculate the spectrogram
-        f, t, Sxx = signal.stft(segment, **spec_params)
-        fig = plt.figure(figsize=(8, 6))
-        plt.imshow(np.fliplr(abs(Sxx).T).T, cmap='viridis', aspect='auto',
-                extent=[t.min(), t.max(), f.min(), f.max()])
-        plt.ylabel('Frequency [kHz]')
-        plt.xlabel('Number of Samples')
-        plt.axis('off')
+        detrended_data = signal.detrend(segment)
+        sample = detrended_data[:10500]
+        
+        # Compute spectrogram
+        f, t, Sxx = signal.stft(sample, **spec_params)
 
-        # Save the spectrogram
+        # Plot spectrogram
+        fig = plt.figure(figsize=(10, 6))
+        plt.imshow(
+            np.log(np.abs(Sxx).T + 1e-10),  # Avoid log(0)
+            cmap='jet',
+            aspect='auto',
+            extent=[t.min(), t.max(), f.min(), f.max()],
+        )
+        plt.ylabel('Frequency [kHz]')
+        plt.xlabel('Time [s]')
+        plt.axis('off')
+        plt.gca().invert_yaxis()
+
+        # Save spectrogram
         plt.savefig(output, bbox_inches='tight', pad_inches=0)
         plt.close(fig)
 

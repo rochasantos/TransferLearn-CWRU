@@ -1,6 +1,7 @@
 import os
 import yaml
 from datasets import CWRU, UORED, Paderborn, Hust
+from scipy import signal
 from src.data_processing import DatasetManager
 from src.spectrograms.generate_spectrogram import generate_spectrogram
 
@@ -10,7 +11,10 @@ def create_spectrograms(data_filter_path, preprocessing_pipeline, num_segments=N
     
     with open('config/spectrogram_config.yaml', 'r') as file:
         spect_info = yaml.safe_load(file)
-    print(data_info)
+    if not data_info:
+        print("No data found to process.")
+        return
+    #print(data_info)
     for info in data_info:
         # Get infos
         dataset_name, basename, orig_sr = info['dataset_name'], info['filename'], int(info['sampling_rate'])
@@ -19,6 +23,10 @@ def create_spectrograms(data_filter_path, preprocessing_pipeline, num_segments=N
         rawfilepath = os.path.join('data/raw', dataset_name.lower(), basename+'.mat') if info['dataset_name']!='Paderborn' else os.path.join('data/raw/paderborn', basename[12:16], basename+'.mat')
         signal, label = eval(f'{dataset_name}().load_signal_by_path("{rawfilepath}")')
         
+        if signal is None or label is None:
+            print(f"Failed to load signal or label for {basename}. Skipping.")
+            continue
+
         # Get output path
         output_path = os.path.join('data/spectrograms', label, basename)
 

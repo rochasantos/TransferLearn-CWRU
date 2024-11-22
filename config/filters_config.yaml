@@ -2,8 +2,8 @@ CWRU:
   dataset_name: "CWRU"
   bearing_type: "6203"  # FE
   label: ["N", "I", "O", "B"]
-  condition_bearing_health: ["faulty", "healthy", "developing"]
-  damage_method: ["ADSR", "EDM"]
+  #condition_bearing_health: ["faulty", "healthy", "developing"]
+  #damage_method: ["ADSR", "EDM"]
 # Hust:
 #   label: ["N", "I", "O", "B"]
 # Paderborn:
@@ -13,5 +13,5 @@ UORED:
   dataset_name: "UORED"
   bearing_type: "6203"  # FE   
   label: ["N", "I", "O", "B"]
-  condition_bearing_health: ["faulty", "healthy", "developing"]
-  damage_method: ["ADSR", "EDM"]
+  #condition_bearing_health: ["faulty", "healthy", "developing"]
+  #damage_method: ["ADSR", "EDM"]
