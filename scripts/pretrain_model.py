@@ -50,8 +50,9 @@ def pretrain_model(model, datasets_name, epochs=10, batch_size=32, learning_rate
         for images, labels in dataloader:
             images, labels = images.to(device), labels.to(device)
             optimizer.zero_grad()
-            outputs = model(images)
-            loss = criterion(outputs, labels)
+            #outputs = model(images)
+            logits, attentions = model(images)
+            loss = criterion(logits, labels)
             loss.backward()
             optimizer.step()
             running_loss += loss.item()

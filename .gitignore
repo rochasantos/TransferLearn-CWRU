@@ -18,3 +18,4 @@ data/**/**/*.png
 *.drawio.svg
 
 results/
+logs/

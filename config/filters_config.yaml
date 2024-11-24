@@ -2,8 +2,8 @@ CWRU:
   dataset_name: "CWRU"
   bearing_type: "6205"  # DE
   label: ["N", "I", "O", "B"]
-Hust:
-  label: ["N", "I", "O", "B"]
+#Hust:
+#  label: ["N", "I", "O", "B"]
 # Paderborn:
 #   label: ["N", "I", "O", "B"]
 #   damage_method: ["EDM", "ENG", "DRL"] # Artificially generated faults. 
