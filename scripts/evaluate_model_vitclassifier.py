@@ -283,6 +283,9 @@ def kfold_cross_validation(model, test_loader, num_epochs, lr, group_by="", clas
 
         model.eval()
         all_labels, all_predictions = [], []
+        # Track classes already visualized
+        visualized_classes = set()
+
         with torch.no_grad():
             for idx, (images, labels) in enumerate(test_loader):
                 images, labels = images.to('cuda'), labels.to('cuda')
@@ -297,6 +300,7 @@ def kfold_cross_validation(model, test_loader, num_epochs, lr, group_by="", clas
                         head=0,  # Visualize first attention head
                         layer=-1  # Visualize last attention layer
                     )
+                               
                 _, predicted = torch.max(logits, 1)
                 all_labels.extend(labels.cpu().numpy())
                 all_predictions.extend(predicted.cpu().numpy())
@@ -374,7 +378,7 @@ def visualize_attention(dataset, model, idx, attentions, head=0, layer=-1):
     class_mapping = {0: 'B', 1: 'N', 2: 'O', 3: 'I'}
     
     # Convert the label index to class name
-    class_name = class_mapping.get(label.item(), "Unknown")
+    class_name = class_mapping.get(label, "Unknown")
     
     # Convert the spectrogram to a tensor and preprocess it
     image_tensor = spectrogram.unsqueeze(0).to(model.device)  # Already transformed

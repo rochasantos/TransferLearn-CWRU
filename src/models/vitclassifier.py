@@ -46,7 +46,7 @@ def train_and_save(model, train_loader, num_epochs, lr=0.001, save_path="vit_cla
 
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', patience=3, factor=0.5, verbose=True)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', patience=7, factor=0.3, verbose=True)
     
     best_loss = float("inf")  
     patience_counter = 0
@@ -93,7 +93,7 @@ def train_and_save(model, train_loader, num_epochs, lr=0.001, save_path="vit_cla
     else:
         print("Training stopped early due to lack of improvement.")
         
-    print(f"Epoch [{epoch + 1}/{num_epochs}], Loss: {running_loss / len(train_loader):.4f}")
+    #print(f"Epoch [{epoch + 1}/{num_epochs}], Loss: {running_loss / len(train_loader):.4f}")
     
     # Save the trained model weights
     torch.save(model.state_dict(), save_path)
