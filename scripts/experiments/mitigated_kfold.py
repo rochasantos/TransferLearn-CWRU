@@ -48,7 +48,6 @@ def mitigated_kfold(model, fold_split_sequence, num_epochs=50, learning_rate=0.0
                 test_dataset_dir = os.path.join(root_dir, f"fold{n_test_fold}")                        
                 test_dataset = ImageFolder(test_dataset_dir, transform)                
                 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
-                dataset_class = test_dataset.classes
 
                 # Evaluating the model
                 print(f"Evaluating the model on the fold {n_test_fold}.")
