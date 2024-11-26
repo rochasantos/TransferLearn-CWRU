@@ -30,7 +30,7 @@ def evaluate_model(model, test_loader, dataset_class, device):
     print(f'Confusion Matrix')
     class_indexes = list(range(len(dataset_class)))
     cm = confusion_matrix(fold_true_labels, fold_predicted_labels, labels=class_indexes)
-    cls_report = classification_report(fold_true_labels, fold_predicted_labels, digits=4)
+    cls_report = classification_report(fold_true_labels, fold_predicted_labels, digits=4, zero_division=1)
     print(dataset_class)
     print(cm)
     print(cls_report)
