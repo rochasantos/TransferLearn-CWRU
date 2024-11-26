@@ -11,7 +11,7 @@ from utils.logginout import LoggerWriter
 from utils.print_info import print_info
 
 
-def experimenter_cross_domain():
+def experimenter_cross_dataset():
 
     model = CNN2D()
     
@@ -42,7 +42,7 @@ def experimenter_cross_domain():
     evaluate_model(model, test_loader, dataset_class, device="cuda")
 
 def run_experimenter():     
-    experimenter_cross_domain()
+    experimenter_cross_dataset()
 
 
 if __name__ == "__main__":
