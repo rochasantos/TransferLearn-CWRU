@@ -95,7 +95,7 @@ def one_fold_with_bias(model, dataset, num_epochs, lr, class_names):
     
     # Training loop
     print('Starting One-Fold (With Bias) Training...')
-    print(dataset.get_dataset_name())
+    #print(dataset.get_dataset_name())
     model.train()
     for epoch in range(num_epochs):
         total_loss = 0.0
@@ -148,7 +148,7 @@ def one_fold_without_bias(model, dataset, num_epochs, lr, class_names):
     
     # Training loop
     print('Starting One-Fold (Without Bias) Training...')
-    print(dataset.get_dataset_name())
+#    print(dataset.get_dataset_name())
     model.train()
     for epoch in range(num_epochs):
         total_loss = 0.0
