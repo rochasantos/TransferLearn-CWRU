@@ -76,7 +76,7 @@ def resubstitution_test(model, dataset, num_epochs, lr, class_names):
     cm = confusion_matrix(all_labels, all_predictions)
     print(f'Resubstitution Accuracy: {accuracy:.2f}%')
     #print('Confusion Matrix:\n', cm)
-    print(dataset.get_dataset_name())
+    #print(dataset.get_dataset_name())
     print_confusion_matrix(cm, class_names, all_labels, all_predictions)
 
 def one_fold_with_bias(model, dataset, num_epochs, lr, class_names):
@@ -127,7 +127,7 @@ def one_fold_with_bias(model, dataset, num_epochs, lr, class_names):
     cm = confusion_matrix(all_labels, all_predictions)
     print(f'One-Fold (With Bias) Accuracy: {accuracy:.2f}%')
     #print('Confusion Matrix:\n', cm)
-    print(dataset.get_dataset_name())
+    #print(dataset.get_dataset_name())
     print_confusion_matrix(cm, class_names, all_labels, all_predictions)
 
 def one_fold_without_bias(model, dataset, num_epochs, lr, class_names):
@@ -180,7 +180,7 @@ def one_fold_without_bias(model, dataset, num_epochs, lr, class_names):
     cm = confusion_matrix(all_labels, all_predictions)
     print(f'One-Fold (Without Bias) Accuracy: {accuracy:.2f}%')
     #print('Confusion Matrix:\n', cm) 
-    print(dataset.get_dataset_name())
+    #print(dataset.get_dataset_name())
     print_confusion_matrix(cm, class_names, all_labels, all_predictions)
     
 def kfold_cross_validation(model, test_loader, num_epochs, lr, group_by="", class_names=[], n_splits=4):
