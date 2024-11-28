@@ -43,15 +43,15 @@ def resubstitution_test(model, dataset, num_epochs, lr, class_names):
     
     # Training loop
     print('Starting Resubstitution Test Training...')
-    print(dataset.get_dataset_name())
+    #print(dataset.get_dataset_name())
     model.train()
     for epoch in range(num_epochs):
         total_loss = 0.0
         for images, labels in dataloader:
             images, labels = images.to('cuda'), labels.to('cuda')
             optimizer.zero_grad()
-            outputs = model(images)
-            loss = criterion(outputs, labels)
+            logits, attentions = model(images)
+            loss = criterion(logits, labels)
             loss.backward()
             optimizer.step()
             total_loss += loss.item()
@@ -66,8 +66,8 @@ def resubstitution_test(model, dataset, num_epochs, lr, class_names):
     with torch.no_grad():
         for images, labels in dataloader:
             images, labels = images.to('cuda'), labels.to('cuda')
-            outputs = model(images)
-            _, predicted = torch.max(outputs, 1)
+            logits, attentions = model(images)
+            _, predicted = torch.max(logits, 1)
             all_labels.extend(labels.cpu().numpy())
             all_predictions.extend(predicted.cpu().numpy())
     
@@ -102,8 +102,8 @@ def one_fold_with_bias(model, dataset, num_epochs, lr, class_names):
         for images, labels in train_loader:
             images, labels = images.to('cuda'), labels.to('cuda')
             optimizer.zero_grad()
-            outputs = model(images)
-            loss = criterion(outputs, labels)
+            logits, attentions = model(images)
+            loss = criterion(logits, labels)
             loss.backward()
             optimizer.step()
             total_loss += loss.item()
@@ -117,8 +117,8 @@ def one_fold_with_bias(model, dataset, num_epochs, lr, class_names):
     with torch.no_grad():
         for images, labels in test_loader:
             images, labels = images.to('cuda'), labels.to('cuda')
-            outputs = model(images)
-            _, predicted = torch.max(outputs, 1)
+            logits, attentions = model(images)
+            _, predicted = torch.max(logits, 1)
             all_labels.extend(labels.cpu().numpy())
             all_predictions.extend(predicted.cpu().numpy())
     
@@ -155,8 +155,8 @@ def one_fold_without_bias(model, dataset, num_epochs, lr, class_names):
         for images, labels in train_loader:
             images, labels = images.to('cuda'), labels.to('cuda')
             optimizer.zero_grad()
-            outputs = model(images)
-            loss = criterion(outputs, labels)
+            logits, attentions = model(images)
+            loss = criterion(logits, labels)
             loss.backward()
             optimizer.step()
             total_loss += loss.item()
@@ -170,8 +170,8 @@ def one_fold_without_bias(model, dataset, num_epochs, lr, class_names):
     with torch.no_grad():
         for images, labels in test_loader:
             images, labels = images.to('cuda'), labels.to('cuda')
-            outputs = model(images)
-            _, predicted = torch.max(outputs, 1)
+            logits, attentions = model(images)
+            _, predicted = torch.max(logits, 1)
             all_labels.extend(labels.cpu().numpy())
             all_predictions.extend(predicted.cpu().numpy())
     
