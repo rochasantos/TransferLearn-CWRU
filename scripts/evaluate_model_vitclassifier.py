@@ -15,7 +15,7 @@ from torch.utils.data import DataLoader, Subset
 from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score, f1_score, classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import StratifiedShuffleSplit, StratifiedGroupKFold, StratifiedKFold
-from scripts.experiments.helper import grouper 
+from scripts.experiments.helper import grouper, grouper_distribution 
 
 def print_confusion_matrix(cm, class_names, all_labels, all_predictions):
     """Displays the confusion matrix in the console."""
@@ -186,7 +186,7 @@ def one_fold_without_bias(model, dataset, num_epochs, lr, class_names):
 def kfold_cross_validation(model, test_loader, num_epochs, lr, group_by="", class_names=[], n_splits=4):
     """Performs K-Fold Cross-Validation for ViT models with optional grouping on the provided dataset."""
     batch_size = 32
-    dataset = test_loader.dataset
+    dataset = test_loader.dataset.datasets[0]
     X = np.arange(len(dataset))
     y = dataset.targets  # Class labels for stratification
 
@@ -216,8 +216,8 @@ def kfold_cross_validation(model, test_loader, num_epochs, lr, group_by="", clas
             print(f"Skipping Fold {fold + 1} as the test set is empty.")
             continue
 
-        train_distribution = compute_class_distribution(train_idx, dataset, class_names)
-        test_distribution = compute_class_distribution(test_idx, dataset, class_names)
+        train_distribution = grouper_distribution(dataset, None, train_idx, class_names)
+        test_distribution = grouper_distribution(dataset, None, test_idx, class_names)
 
         print(f"Fold {fold + 1} - Train Distribution: {train_distribution}")
         print(f"Fold {fold + 1} - Test Distribution: {test_distribution}")
@@ -286,24 +286,45 @@ def kfold_cross_validation(model, test_loader, num_epochs, lr, group_by="", clas
         # Track classes already visualized
         visualized_classes = set()
 
+        # Create a dictionary to store one index per class for visualization
+        class_sample_indices = {class_name: None for class_name in range(len(class_names))}
+
         with torch.no_grad():
             for idx, (images, labels) in enumerate(test_loader):
                 images, labels = images.to('cuda'), labels.to('cuda')
                 logits, attentions = model(images) 
                 # Visualize attention for the first 5 samples
-                if idx < 2:
-                    visualize_attention(
-                        dataset=dataset,
-                        model=model,
-                        idx=idx,
-                        attentions=attentions,
-                        head=0,  # Visualize first attention head
-                        layer=-1  # Visualize last attention layer
-                    )
+                # if idx < 2:
+                #     visualize_attention(
+                #         dataset=dataset,
+                #         model=model,
+                #         idx=idx,
+                #         attentions=attentions,
+                #         head=0,  # Visualize first attention head
+                #         layer=-1  # Visualize last attention layer
+                #     )
+                
+                # Store one index per class for visualization
+                for i, label in enumerate(labels.cpu().numpy()):
+                    if class_sample_indices[label] is None:
+                        class_sample_indices[label] = idx * len(labels) + i  # Global index in the dataset
                                
                 _, predicted = torch.max(logits, 1)
                 all_labels.extend(labels.cpu().numpy())
                 all_predictions.extend(predicted.cpu().numpy())
+        
+        # Visualize attention for one sample per class
+        for class_id, sample_idx in class_sample_indices.items():
+            if sample_idx is not None:
+                print(f"Visualizing attention for class '{class_names[class_id]}' (index {sample_idx})...")
+                visualize_attention(
+                    dataset=dataset,
+                    model=model,
+                    idx=sample_idx,
+                    attentions=None,  # Let visualize_attention compute attentions
+                    head=0,  # Visualize first attention head
+                    layer=-1  # Visualize last attention layer
+                )
 
         # Check if there are predictions to evaluate
         if all_labels:
@@ -349,16 +370,7 @@ def kfold_cross_validation(model, test_loader, num_epochs, lr, group_by="", clas
         print(f"  - Mean Recall: {mean_metrics['recall']:.2f}%")
         print(f"  - Mean F1-Score: {mean_metrics['f1']:.2f}%")
     else:
-        print("No valid folds with test data to compute cross-validation accuracy.")
-        
-# Compute and print class distribution for train and test splits
-def compute_class_distribution(indices, dataset, class_names):
-    """Helper function to compute class distribution for given indices."""
-    labels = [dataset.targets[i] for i in indices]
-    distribution = {class_name: 0 for class_name in class_names}
-    for label in labels:
-        distribution[class_names[label]] += 1
-    return distribution
+        print("No valid folds with test data to compute cross-validation accuracy.")     
         
 def visualize_attention(dataset, model, idx, attentions, head=0, layer=-1):
     """
@@ -455,7 +467,7 @@ def visualize_attention(dataset, model, idx, attentions, head=0, layer=-1):
     timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
     log_folder = "logs"
     os.makedirs(log_folder, exist_ok=True)  # Ensure logs folder exists
-    file_name = f"{log_folder}/experiment_log_{timestamp}_{idx}.png"
+    file_name = f"{log_folder}/experiment_log_{timestamp}_{class_name}_{idx}.png"
     fig.savefig(file_name, bbox_inches="tight",dpi=300)  # Save the figure using fig object
 
     plt.show()

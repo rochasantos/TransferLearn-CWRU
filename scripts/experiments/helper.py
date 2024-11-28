@@ -11,6 +11,37 @@ class_label_mapping = {
     "I": "Inner Race Fault"
 }
 
+# Compute and print class distribution for train and test splits
+def grouper_distribution(dataset, feature_mitigation, indices, class_names):
+    """
+    Computes class distribution using the grouper logic.
+    Args:
+        dataset: The dataset object containing samples and metadata.
+        feature_mitigation (str): Feature to group by (not used for this function).
+        indices (list): List of indices in the dataset to compute distribution.
+        class_names (list): List of class names corresponding to label indices.
+    Returns:
+        dict: A dictionary with class names as keys and counts as values.
+    """
+    if not feature_mitigation:
+        print('Group by: none')
+    
+    # Initialize class distribution
+    class_distribution = {class_name: 0 for class_name in class_names}
+
+    for idx in indices:
+        path = dataset.samples[idx][0]
+        basename = os.path.basename(path).split('#')[0]
+        bearing_info = annot.filter_data({"filename": basename})[0]
+        class_label = bearing_info.get("label", "default")
+        
+        # Increment class count if valid
+        if class_label in class_names:
+            class_distribution[class_label] += 1
+
+    print('Computed Class Distribution:', class_distribution)
+    return class_distribution
+
 def get_class_counter(dataset, feature_label="class"):
     class_counter = {"N": 0, "B": 0, "O": 0, "I": 0}
     for i in range(len(dataset)):
