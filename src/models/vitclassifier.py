@@ -2,9 +2,11 @@ import torch
 import torch.nn as nn
 from transformers import ViTForImageClassification, ViTConfig, ViTImageProcessor
 from torchvision.transforms import ToPILImage
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, classification_report
+
 
 class ViTClassifier(nn.Module):
-    def __init__(self, num_classes=4):
+    def __init__(self, num_classes=4, dropout_rate=0.6):
         super(ViTClassifier, self).__init__()
         
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -23,7 +25,11 @@ class ViTClassifier(nn.Module):
         )
         
         # Manually adjust the classifier layer if necessary
-        self.vit.classifier = nn.Linear(self.vit.config.hidden_size, num_classes)
+        #self.vit.classifier = nn.Linear(self.vit.config.hidden_size, num_classes)
+        self.vit.classifier = nn.Sequential(
+            nn.Dropout(p=dropout_rate),  # Add Dropout before the final layer
+            nn.Linear(self.vit.config.hidden_size, num_classes)
+        )
 
 
     def forward(self, x):
@@ -40,25 +46,37 @@ class ViTClassifier(nn.Module):
 
     
 # To train and save the model after training
-def train_and_save(model, train_loader, num_epochs, lr=0.001, save_path="vit_classifier.pth", patience=5):
+def train_and_save(model, train_loader, num_epochs, lr=0.001, save_path="vit_classifier.pth", patience=3, weight_decay=0.01):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
 
-    criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', patience=7, factor=0.3, verbose=True)
+    class_weights = torch.tensor([1.0, 1.0, 0.25, 1.0]).to(device) 
+    criterion = nn.CrossEntropyLoss(weight=class_weights)
+    optimizer = torch.optim.Adam(model.parameters(), lr, weight_decay=weight_decay)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.3, verbose=True)
     
     best_loss = float("inf")  
     patience_counter = 0
     
-    print('Starting VitClassifier Training...')
-    #print("Training dataset >>>" ,train_loader.dataset[0])
-    print("LR:" ,lr)
-    print("Num Epochs:" ,num_epochs)
+    results = {
+        "epoch": [],
+        "loss": [],
+        "accuracy": [],
+        "precision": [],
+        "recall": [],
+        "f1_score": []
+    }
+    
+    print('Starting VitClassifier Training...')    
+    print(f"LR: {lr} | Num Epochs: {num_epochs} | Weight Decay: {weight_decay} | Early Stopping Patience: {patience}")
+
     
     model.train()
     for epoch in range(num_epochs):
         running_loss = 0.0
+        all_labels = []
+        all_predictions = []
+ 
         for images, labels in train_loader:
             images, labels = images.to(model.device), labels.to(model.device)
             
@@ -69,9 +87,28 @@ def train_and_save(model, train_loader, num_epochs, lr=0.001, save_path="vit_cla
             optimizer.step()
             running_loss += loss.item()
             
+            # Collect predictions and labels for metrics calculation
+            _, preds = torch.max(logits, 1)
+            all_labels.extend(labels.cpu().numpy())
+            all_predictions.extend(preds.cpu().numpy())
+
+            
          # Calculate average loss for the epoch
         avg_loss = running_loss / len(train_loader)
-        print(f"Epoch [{epoch + 1}/{num_epochs}], Loss: {avg_loss:.4f}")
+        # Calculate metrics
+        accuracy = accuracy_score(all_labels, all_predictions) * 100
+        precision = precision_score(all_labels, all_predictions, average='weighted', zero_division=0) * 100
+        recall = recall_score(all_labels, all_predictions, average='weighted', zero_division=0) * 100
+        f1 = f1_score(all_labels, all_predictions, average='weighted', zero_division=0) * 100
+        
+        results["epoch"].append(epoch + 1)
+        results["loss"].append(avg_loss)
+        results["accuracy"].append(accuracy)
+        results["precision"].append(precision)
+        results["recall"].append(recall)
+        results["f1_score"].append(f1)
+        
+        print(f"Epoch [{epoch + 1}/{num_epochs}] Metrics: | Loss: {avg_loss:.4f} | Accuracy: {accuracy:.2f}% | Precision: {precision:.2f}% | Recall: {recall:.2f}% | F1-Score: {f1:.2f}%")
 
         # Step the scheduler with the average loss
         scheduler.step(avg_loss)
@@ -92,12 +129,12 @@ def train_and_save(model, train_loader, num_epochs, lr=0.001, save_path="vit_cla
         print("Training completed successfully.")
     else:
         print("Training stopped early due to lack of improvement.")
-        
-    #print(f"Epoch [{epoch + 1}/{num_epochs}], Loss: {running_loss / len(train_loader):.4f}")
-    
+     
     # Save the trained model weights
     torch.save(model.state_dict(), save_path)
     print("Model saved successfully:", save_path)
+    
+    return results
 
 # To reload the trained model later
 def load_trained_model(model_class, save_path, num_classes=4):

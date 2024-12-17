@@ -11,7 +11,7 @@ import sys
 import os
 from src.data_processing import SpectrogramImageDataset
 from torch.optim import Adam, AdamW
-from torch.utils.data import DataLoader, Subset
+from torch.utils.data import DataLoader, Subset, ConcatDataset, WeightedRandomSampler
 from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score, f1_score, classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import StratifiedShuffleSplit, StratifiedGroupKFold, StratifiedKFold
@@ -186,9 +186,12 @@ def one_fold_without_bias(model, dataset, num_epochs, lr, class_names):
 def kfold_cross_validation(model, test_loader, num_epochs, lr, group_by="", class_names=[], n_splits=4):
     """Performs K-Fold Cross-Validation for ViT models with optional grouping on the provided dataset."""
     batch_size = 32
-    dataset = test_loader.dataset.datasets[0]
-    X = np.arange(len(dataset))
-    y = dataset.targets  # Class labels for stratification
+    dataset = test_loader.dataset
+    
+    # Extract targets directly from the DataLoader
+    y = [label for _, label in dataset]
+
+    X = np.arange(len(y))
 
     # If `group_by` is empty, use regular StratifiedKFold, otherwise use StratifiedGroupKFold
     if group_by:
@@ -201,7 +204,6 @@ def kfold_cross_validation(model, test_loader, num_epochs, lr, group_by="", clas
         split = skf.split(X, y)
 
     # Save initial model state for reinitialization before each fold
-    #initial_state = model.state_dict()
     initial_state = copy.deepcopy(model.state_dict())
     fold_metrics = []  # Store metrics for all folds
 
@@ -216,14 +218,18 @@ def kfold_cross_validation(model, test_loader, num_epochs, lr, group_by="", clas
             print(f"Skipping Fold {fold + 1} as the test set is empty.")
             continue
 
-        train_distribution = grouper_distribution(dataset, None, train_idx, class_names)
-        test_distribution = grouper_distribution(dataset, None, test_idx, class_names)
+        # print(f">> Train distribution: -- using grouper logic")    
+        # train_distribution = grouper_distribution(dataset, group_by, train_idx, class_names)
+        # print(f">> Test distribution: -- using grouper logic") 
+        # test_distribution = grouper_distribution(dataset, group_by, test_idx, class_names)
 
-        print(f"Fold {fold + 1} - Train Distribution: {train_distribution}")
-        print(f"Fold {fold + 1} - Test Distribution: {test_distribution}")
+        # print(f"Fold {fold + 1} - Train Distribution: {train_distribution}")
+        # print(f"Fold {fold + 1} - Test Distribution: {test_distribution}")
 
         # Prepare train and test loaders for the current fold
         train_loader = DataLoader(Subset(dataset, train_idx), batch_size=batch_size, shuffle=True)
+        #train_loader = create_balanced_dataloader(Subset(dataset, train_idx), batch_size=batch_size)
+        
         test_loader = DataLoader(Subset(dataset, test_idx), batch_size=batch_size, shuffle=False)
 
         # Alternatively, analyze distributions from DataLoaders
@@ -356,7 +362,16 @@ def kfold_cross_validation(model, test_loader, num_epochs, lr, group_by="", clas
                 "recall": recall,
                 "f1": f1
             })
-            print("\nDataset:", dataset.root)
+            
+            if isinstance(dataset, ConcatDataset):
+                root_dirs = [ds.root for ds in dataset.datasets if hasattr(ds, 'root')]
+                print("\nDataset Roots:", root_dirs)
+            else:
+                if hasattr(dataset, 'root'):
+                    print("\nDataset Root:", dataset.root)
+                else:
+                    print("\nDataset information not available.")            
+            
             print_confusion_matrix(cm, class_names, all_labels, all_predictions)
         else:
             print(f"No test data for evaluation in Fold {fold + 1}. Accuracy cannot be computed.")
@@ -371,6 +386,22 @@ def kfold_cross_validation(model, test_loader, num_epochs, lr, group_by="", clas
         print(f"  - Mean F1-Score: {mean_metrics['f1']:.2f}%")
     else:
         print("No valid folds with test data to compute cross-validation accuracy.")     
+
+def create_balanced_dataloader(dataset, batch_size):
+    # Compute class counts and weights
+    class_counts = np.bincount([label for _, label in dataset])
+    class_weights = 1.0 / class_counts
+
+    # Assign sample weights
+    sample_weights = [class_weights[label] for _, label in dataset]
+
+    # Define the sampler
+    sampler = WeightedRandomSampler(sample_weights, num_samples=len(sample_weights), replacement=True)
+
+    # Create DataLoader
+    dataloader = DataLoader(dataset, batch_size=batch_size, sampler=sampler)
+    print("Balanced DataLoader created.")
+    return dataloader
         
 def visualize_attention(dataset, model, idx, attentions, head=0, layer=-1):
     """
