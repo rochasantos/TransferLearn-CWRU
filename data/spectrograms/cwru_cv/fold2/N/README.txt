@@ -1,1 +1,0 @@
-where the spectrograms related to reference bearings will be stored.
