@@ -5,7 +5,7 @@ from torchvision import transforms
 from torchvision.datasets import ImageFolder
 from src.models import CNN2D, ViTClassifier, ResNet18
 from src.models.vitclassifier import train_and_save, load_trained_model
-from scripts.evaluate_model_vitclassifier import kfold_cross_validation, resubstitution_test, one_fold_with_bias, one_fold_without_bias
+from scripts.evaluate_model_vitclassifier import kfold_cross_validation, resubstitution_test, one_fold_with_bias, one_fold_without_bias, evaluate_full_model
 
 import sys
 import logging
@@ -65,7 +65,7 @@ def experimenter_vitclassifier_kfold():
 
     model = ViTClassifier(num_classes=4).to("cuda") 
     # Training parameters 
-    num_epochs_vit_train = 10
+    num_epochs_vit_train = 15
     lr_vit_train = 0.0001
     batch_size = 32
     
@@ -73,8 +73,8 @@ def experimenter_vitclassifier_kfold():
     class_to_idx = {'B': 0, 'I': 1, 'N': 2, 'O': 3}
     
     # Load datasets
-    train_datasets_name = ["UORED"]
-    test_datasets_name = ["CWRU"]
+    train_datasets_name = ["CWRU"]
+    test_datasets_name = ["UORED"]
 
     root_dir = "data/spectrograms"
     transform = transforms.Compose([
@@ -82,7 +82,7 @@ def experimenter_vitclassifier_kfold():
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
-    
+     
     # Load train and test datasets
     train_datasets = [ImageFolder(os.path.join(root_dir, ds.lower()), transform) for ds in train_datasets_name]
     test_datasets = [ImageFolder(os.path.join(root_dir, ds.lower()), transform) for ds in test_datasets_name]
@@ -109,7 +109,6 @@ def experimenter_vitclassifier_kfold():
     
     # Loads the pre-trained model
     saved_model_path = "saved_models/vit_classifier.pth"
-    #saved_model_path = "saved_models/vit_pretrained_cwru.pth"
 
     # Experiment log
     title = "Transfer Learning: Addressing cross Datasets with ViTClasifier"
@@ -124,7 +123,7 @@ def experimenter_vitclassifier_kfold():
         
     # Print the class-to-index mapping with dataset names
     for dataset_name, dataset in zip(train_datasets_name, train_datasets):
-        print(f"Train dataset ({dataset_name}) mapping: {dataset.class_to_idx}")
+        print(f"Pre-train dataset ({dataset_name}) mapping: {dataset.class_to_idx}")
 
     for dataset_name, dataset in zip(test_datasets_name, test_datasets):
         print(f"Test dataset ({dataset_name}) mapping: {dataset.class_to_idx}")
@@ -134,14 +133,16 @@ def experimenter_vitclassifier_kfold():
     if pretrain_model: 
         model = ViTClassifier().to("cuda")
         print("Pre-training according request.")
-        train_and_save(model, train_loader, num_epochs_vit_train, lr_vit_train, saved_model_path) 
+        train_and_save(model, train_loader, num_epochs_vit_train, lr_vit_train, saved_model_path)
+    else:
+         print("No Pre-training is needed, using a saved file.")
 
     # Load the trained model for testing/evaluation
     model = load_trained_model(ViTClassifier, saved_model_path, num_classes=len(class_to_idx)).to("cuda")
     
     # Running the experiment 
-    num_epochs = 10
-    lr = 1e-4
+    num_epochs = 12
+    lr = 0.001
     #group_by = "rpm" 
     #group_by = "extent_damage"
     #group_by = "condition_bearing_health"
