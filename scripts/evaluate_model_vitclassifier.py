@@ -385,7 +385,23 @@ def kfold_cross_validation(model, test_loader, num_epochs, lr, group_by="", clas
         print(f"  - Mean Recall: {mean_metrics['recall']:.2f}%")
         print(f"  - Mean F1-Score: {mean_metrics['f1']:.2f}%")
     else:
-        print("No valid folds with test data to compute cross-validation accuracy.")     
+        print("No valid folds with test data to compute cross-validation accuracy.")   
+        
+    evaluate_full_model(model, test_loader)  
+
+def evaluate_full_model(model, test_loader):
+    model.eval()
+    all_labels, all_predictions = [], []
+    with torch.no_grad():
+        for images, labels in test_loader:
+            logits, _ = model(images.to('cuda'))
+            _, predicted = torch.max(logits, 1)
+            all_labels.extend(labels.cpu().numpy())
+            all_predictions.extend(predicted.cpu().numpy())
+
+    report = classification_report(all_labels, all_predictions, zero_division=1)
+    print("\nFinal Test Evaluation Report:")
+    print(report)
 
 def create_balanced_dataloader(dataset, batch_size):
     # Compute class counts and weights

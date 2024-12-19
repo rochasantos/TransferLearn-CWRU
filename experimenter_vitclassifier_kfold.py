@@ -65,7 +65,7 @@ def experimenter_vitclassifier_kfold():
 
     model = ViTClassifier(num_classes=4).to("cuda") 
     # Training parameters 
-    num_epochs_vit_train = 15
+    num_epochs_vit_train = 10
     lr_vit_train = 0.0001
     batch_size = 32
     
@@ -100,11 +100,11 @@ def experimenter_vitclassifier_kfold():
     
     # Compute and print distributions using dataset names
     for dataset_name, dataset_loader in zip(train_datasets_name, [train_loader]):
-        print(f"\n[Pre Train] Calculating distribution for train dataset ({dataset_name})...")
+        print(f"\n>> Calculating distribution for pre-train dataset ({dataset_name})...")
         train_distribution = compute_and_print_distribution(dataset_loader, class_to_idx, dataset_name)
 
     for dataset_name, dataset_loader in zip(test_datasets_name, [test_loader]):
-        print(f"\n[Pre Train] Calculating distribution for test dataset ({dataset_name})...")
+        print(f"\n>> Calculating distribution for test dataset ({dataset_name})...")
         test_distribution = compute_and_print_distribution(dataset_loader, class_to_idx, dataset_name)
     
     # Loads the pre-trained model
@@ -129,7 +129,7 @@ def experimenter_vitclassifier_kfold():
         print(f"Test dataset ({dataset_name}) mapping: {dataset.class_to_idx}")
     
     # Instantiate the ViTClassifier and train it with train_loader to narrow the model context
-    pretrain_model = False
+    pretrain_model = True
     if pretrain_model: 
         model = ViTClassifier().to("cuda")
         print("Pre-training according request.")
@@ -141,7 +141,7 @@ def experimenter_vitclassifier_kfold():
     model = load_trained_model(ViTClassifier, saved_model_path, num_classes=len(class_to_idx)).to("cuda")
     
     # Running the experiment 
-    num_epochs = 12
+    num_epochs = 10
     lr = 0.001
     #group_by = "rpm" 
     #group_by = "extent_damage"
