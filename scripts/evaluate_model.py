@@ -10,6 +10,7 @@ def evaluate_model(model, test_loader, dataset_class, device):
     fold_predicted_labels = []
     
     # Model evaluation loop
+    model.eval()
     with torch.no_grad():
         for batch in test_loader:
             images, labels = batch  # Unpack the tuple (images, labels)

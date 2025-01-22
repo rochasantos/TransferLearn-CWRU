@@ -3,18 +3,18 @@ import torch.nn as nn
 import torchvision.models as models
 
 class ResNet18(nn.Module):
-    def __init__(self, num_classes=4, unfreeze_layers=None):
+    def __init__(self, num_classes=4):
         super(ResNet18, self).__init__()
         
-        self.model = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
-
-        if unfreeze_layers:
-            for name, param in self.model.named_parameters():
-                if any(layer in name for layer in unfreeze_layers):
-                    param.requires_grad = True
+        self.model = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)          
         
-        num_ftrs = self.model.fc.in_features
-        self.model.fc = nn.Linear(num_ftrs, num_classes)
+        # Substituir as camadas finais
+        self.model.fc = nn.Sequential(
+            nn.Linear(self.model.fc.in_features, 256),
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(256, num_classes)
+        )
 
     def forward(self, x):
         return self.model(x)

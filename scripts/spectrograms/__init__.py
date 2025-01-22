@@ -1,1 +1,2 @@
 from .generate_spectrogram import generate_spectrogram
+from .generate_escalogram import generate_escalogram

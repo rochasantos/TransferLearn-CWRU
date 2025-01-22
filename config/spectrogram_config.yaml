@@ -1,33 +1,36 @@
-# CWRU:
-#   Spectrogram:
-#     nfft: 1600
-#     fs: 48000
-#     nperseg: 590
-#     noverlap: 566
-#     window: 'hann'
-#   Split:
-#     signal_length: 12000
+CWRU:
+  Spectrogram:
+    nfft: 1600
+    fs: 48000
+    nperseg: 590
+    noverlap: 442 #566
+    window: 'hann'
+  Split:
+    signal_length: 12000
 Hust:
   Spectrogram:
     nfft: 1600
     fs: 51200
     nperseg: 580
-    noverlap: 556
+    noverlap: 435 #556
     window: 'hann'
   Split:
-    signal_length: 12800
-# Paderborn:
-#   NFFT: 1600
-#   Fs: 64000
-#   nperseg: 580
-#   noverlap: 0
-#   signal_length: 640
+    signal_length: 12000 #12800
+Paderborn:
+  Spectrogram:
+    nfft: 1600
+    fs: 64000
+    nperseg: 580
+    noverlap: 435 #0
+    window: 'hann'
+  Split:
+    signal_length: 12000 #64000
 UORED:
   Spectrogram:
     nfft: 1600
     fs: 42000
     nperseg: 580
-    noverlap: 556
+    noverlap: 435 #556
     window: 'hann'
   Split:
-    signal_length: 10500
+    signal_length: 12000 #10500

@@ -34,7 +34,6 @@ class Paderborn(BaseDataset):
         
         self.all_files_metadata = DatasetManager("Paderborn").filter_data()
 
-
     def list_of_bearings(self):
         """ 
         Returns: 
@@ -72,7 +71,9 @@ class Paderborn(BaseDataset):
         matlab_file = scipy.io.loadmat(filepath)
         key = os.path.basename(filepath).split('.')[0]
         data_raw = matlab_file[key]['Y'][0][0][0][6][2][0, :]
-        file_metadata = list(filter(lambda x: x["filename"]==key, self.all_files_metadata))[0]
+        dir_name = key.split('_')[-2]
+        relative_path = dir_name + '/' + dir_name + '/' + key
+        file_metadata = list(filter(lambda x: x["filename"]==relative_path, self.all_files_metadata))[0]
         label = file_metadata['label']
         if self.acquisition_maxsize:
             return data_raw[:self.acquisition_maxsize], label

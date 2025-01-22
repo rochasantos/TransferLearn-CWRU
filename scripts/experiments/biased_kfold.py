@@ -26,7 +26,7 @@ def biesed_kfold(model, num_epochs=50, learning_rate=0.001, batch_size=32, devic
     labels = np.array([sample[1] for sample in dataset.samples])
     
     for i in range(repetition):
-        print(f"\nRepetition: {i}")
+        print(f"\nRepetition: {i+1}")
         accuracies = []
         skf = StratifiedKFold(n_splits=num_folds, shuffle=True, random_state=42)
         for fold, (train_idx, val_idx) in enumerate(skf.split(np.zeros(len(labels)), labels)):
@@ -44,7 +44,12 @@ def biesed_kfold(model, num_epochs=50, learning_rate=0.001, batch_size=32, devic
             # Load the initial state of the model   
             model.load_state_dict(initial_state)
             # Training the model
-            model = train_model(model, train_loader, num_epochs, learning_rate, device)
+            model = train_model(model, train_loader=train_loader, 
+                                val_loader=None, 
+                                num_epochs=num_epochs, 
+                                learning_rate=learning_rate, 
+                                batch_size=batch_size, 
+                                device=device)
             
             model = model.to(device)
 

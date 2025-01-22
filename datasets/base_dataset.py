@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import re
-from utils.download_extract import download_file
+from utils.download_extract import download_file, extract_rar
 from src.data_processing import DatasetManager
 
 from abc import ABC, abstractmethod
@@ -55,6 +55,8 @@ class BaseDataset(ABC):
             output_path = os.path.join('data/raw', dataset_name, bearing[0]+unit)
             if not os.path.exists(os.path.join(dirname, sufix_url)):
                 download_file(url, sufix_url, output_path)                
+            if unit == '.rar':
+                extract_rar(output_path, output_path[:-4])
         print("Download finished.")
 
     def load_signal_by_path(self, filepath):

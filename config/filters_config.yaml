@@ -1,12 +1,15 @@
-CWRU:
-  dataset_name: "CWRU"
-  bearing_type: "6205"  # DE
-  label: ["N", "I", "O", "B"]
+# CWRU:
+#   dataset_name: "CWRU"
+#   bearing_type: "6205"  # DE
+#   sampling_rate: "48000"
+#   label: ["N", "I", "O", "B"]
 Hust:
   label: ["N", "I", "O", "B"]
 # Paderborn:
+  # dataset_name: "Paderborn"
+  # label: ["N"]
+  # damage_method: ["no"]
+  # damage_method: ["EDM", "ENG", "DRL"] # Artificially generated faults. 
+# UORED:
 #   label: ["N", "I", "O", "B"]
-#   damage_method: ["EDM", "ENG", "DRL"] # Artificially generated faults. 
-UORED:
-  label: ["N", "I", "O", "B"]
-  condition_bearing_health: ["faulty", "healthy"]
+#   condition_bearing_health: ["faulty", "healthy"]
