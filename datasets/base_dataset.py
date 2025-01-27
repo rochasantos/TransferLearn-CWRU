@@ -1,6 +1,4 @@
 import os
-import numpy as np
-import re
 from utils.download_extract import download_file, extract_rar
 from src.data_processing import DatasetManager
 
@@ -30,6 +28,7 @@ class BaseDataset(ABC):
         self.acquisition_maxsize = None  # Maximum size for data acquisition.
         dataset_name = str(self)
         self._annotation_file=DatasetManager(dataset_name).filter_data()
+        self._metainfo = DatasetManager(dataset_name)      
 
         if not os.path.exists(self._rawfilesdir):
             os.makedirs(self._rawfilesdir)
@@ -63,31 +62,18 @@ class BaseDataset(ABC):
         signal, label = self._extract_data(filepath)
         return signal, label
     
-    def load_signal(self, regex_filter=r'.*\.mat$'):
-        """ Load vibration signal data from .mat files, filtered by a regex. 
-        Args:
-            regex_filter (str): Regular expression to filter filenames.
-        Returns:
-            None
-        """
-        regex = re.compile(regex_filter)
-        signal = []
-        labels = []
+    def load_signal(self, data_filter):       
+        # metainfo
+        dataset_name = data_filter["dataset_name"]
+        data_manager = DatasetManager(dataset_name)
+        metainfo = data_manager.filter_data(data_filter)        
+        # signal
+        for info in metainfo:
+            basename = info["filename"]        
+            filepath = os.path.join('data/raw/', dataset_name.lower(), basename+'.mat')            
+            data, label = self.load_signal_by_path(filepath)
+            yield data, label 
 
-        for root, dirs, files in os.walk(self.rawfilesdir):
-            for file in files:
-                filepath = os.path.join(root, file)
-                if not regex.search(file):
-                    continue
-                data, label = self._extract_data(filepath)
-                signal.append(data)
-                labels.append(label)
-
-        min_size_acquisition = min([np.size(data) for data in signal])
-        trimmed_data = [data[:min_size_acquisition] for data in signal]
-
-        self._data = np.array(trimmed_data)
-        self._label = np.array(labels)
 
     @classmethod
     @abstractmethod
@@ -113,3 +99,7 @@ class BaseDataset(ABC):
     @property
     def annotation_file(self):
         return self._annotation_file
+    
+    @property
+    def metainfo(self):
+        return self._metainfo
