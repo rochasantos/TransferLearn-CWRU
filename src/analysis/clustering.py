@@ -4,6 +4,12 @@ from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 
+# K-means clustering algorithm
+def apply_kmeans(features, n_clusters):
+    kmeans = KMeans(n_clusters=n_clusters, n_init='auto', random_state=42)
+    kmeans.fit(features)
+    return kmeans
+
 def clustering(model, dataloader, n_clusters, device="cuda"):
     """
     Applies K-means clustering to the features extracted by the trained model in Stage 1.

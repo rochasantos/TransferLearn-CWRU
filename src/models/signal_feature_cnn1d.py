@@ -5,7 +5,7 @@ import torch.nn.functional as F
 # Model definition with modified FeatureExtractor
 class SignalFeatureCNN1D(nn.Module):
     def __init__(self):
-        super(SignalFeatureCNN1D, self).__init__()
+        super().__init__()
 
         # Four convolutional blocks
         self.conv1 = nn.Conv1d(in_channels=1, out_channels=4, kernel_size=3, stride=2, padding=1)
@@ -22,6 +22,7 @@ class SignalFeatureCNN1D(nn.Module):
 
         # Fully connected layer
         self.fc1 = nn.Linear(16 * 469, 128)  # Adjusted for input size
+        self.dropout = nn.Dropout(0.1)
         self.fc2 = nn.Linear(128, 10)  # Example: 10 classes
 
     def forward(self, x):
@@ -38,6 +39,7 @@ class SignalFeatureCNN1D(nn.Module):
         x = F.max_pool1d(x, kernel_size=2)
 
         x = x.view(x.size(0), -1)  # Flatten
-        features = self.fc1(x)
+        features = torch.relu(self.fc1(x))
+        features = self.dropout(features)
         outputs = self.fc2(features)
         return features, outputs  # Return both features and classification outputs

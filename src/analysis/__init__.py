@@ -1,1 +1,1 @@
-from .clustering import clustering, plot_clusters
+from .clustering import clustering, plot_clusters, apply_kmeans

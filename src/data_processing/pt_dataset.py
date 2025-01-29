@@ -19,7 +19,7 @@ class TransformPipeline:
 
 class PtDataset(Dataset):
 
-    def __init__(self, data_filter, sample_size, apply_augmentation=False,
+    def __init__(self, data_filter, sample_size=120_000, apply_augmentation=False,
                  label_mapping = {"N": 0, "I": 1, "O": 2, "B": 3}):
         self.apply_augmentation = apply_augmentation
         data = []
@@ -32,12 +32,16 @@ class PtDataset(Dataset):
         # signal
         for info in metainfo:
             basename = info["filename"]        
-            filepath = os.path.join('data/raw/', dataset_name.lower(), basename+'.mat')            
+            filepath = os.path.join('data/raw/', dataset_name.lower(), basename+'.mat')
+            # print(f"filepath: {filepath}")          
             signal, label = dataset.load_signal_by_path(filepath)
             if signal.shape[0] < sample_size:
                 continue
-            data.append(signal[:sample_size])
-            labels.append(label_mapping[label])
+            m=0
+            for idx in range(sample_size, signal.shape[0], sample_size):
+                data.append(signal[m*sample_size:idx])
+                labels.append(label_mapping[label])
+                m+=1
         self.data = torch.tensor(np.array(data), dtype=torch.float32).unsqueeze(1)
         self.labels = torch.tensor(np.array(labels), dtype=torch.long)
     

@@ -1,14 +1,15 @@
+import sys
 import numpy as np
-from sklearn.cluster import KMeans
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, ConcatDataset
 from src.models import SignalFeatureCNN1D
-from src.analysis import clustering, plot_clusters
-from functools import partial
-import random
-
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import confusion_matrix
+import os
+import logging
+from utils import LoggerWriter
 
 # from utils.download_rawfile import download_rawfile
 from utils import load_yaml
@@ -34,49 +35,17 @@ class TripletLoss(nn.Module):
         # Triplet loss formula
         loss = F.relu(pos_dist - neg_dist + self.margin)
         return loss.mean()
-
-# Step 2: K-means clustering algorithm
-def apply_kmeans(features, n_clusters):
-    kmeans = KMeans(n_clusters=n_clusters, n_init='auto', random_state=42)
-    kmeans.fit(features)
-    return kmeans
-
-# Step 3: Adjust with unlabeled data and KL-divergence
-def kl_divergence_loss(unlabeled_features, cluster_centers):
-    distances = torch.cdist(unlabeled_features, cluster_centers, p=2)
-    soft_assignments = F.softmax(-distances, dim=1)
-    hard_assignments = torch.argmax(soft_assignments, dim=1)
-    loss = 0
-    for i in range(len(cluster_centers)):
-        assigned_points = unlabeled_features[hard_assignments == i]
-        if len(assigned_points) > 0:
-            mean_point = torch.mean(assigned_points, dim=0)
-            loss += F.kl_div(mean_point.log(), cluster_centers[i], reduction='batchmean')
-    return loss
-
-if __name__ == '__main__':
-    # download()
-    dataset_name = "CWRU"
-    sample_size = 120000
-    segment_length = 140
-    label_mapping = {"N": 0, "I": 1, "O": 2, "B": 3}
-    n_class = len(label_mapping)
-    n_epochs = 10 
     
-    data_filter = load_yaml('config/filters_config.yaml')[dataset_name]
-    dataset = PtDataset(data_filter, sample_size, apply_augmentation=True)   
-    data_loader = DataLoader(dataset, batch_size=32, shuffle=True)
 
-    # Initialize model, optimizers, and losses
-    model = SignalFeatureCNN1D()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+def train_model(dataloader, model, n_epochs=100, learning_rate=0.0001, save_path=None):
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     cross_entropy_loss = nn.CrossEntropyLoss()
     triplet_loss_fn = TripletLoss(margin=1.0)
-    
+
     # Training loop
     for epoch in range(n_epochs):  # Number of epochs
         total_loss = 0
-        for batch_data, batch_labels in data_loader:
+        for batch_data, batch_labels in dataloader:
 
             # Forward pass
             features, outputs = model(batch_data)
@@ -109,32 +78,120 @@ if __name__ == '__main__':
 
         print(f"Epoch {epoch + 1}, Total Loss: {total_loss:.4f}")
 
-    # Clustering
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    n_clusters = len(label_mapping)
-    cluster_centers, features, labels = clustering(model, data_loader, n_clusters, device=device)
-    plot_clusters(features, labels, cluster_centers, n_clusters)
+    # Saving model
+    if save_path:
+        if not os.path.exists(os.path.dirname(save_path)):
+            os.mkdir("saved_models")
+        torch.save(model.state_dict(), save_path)   
 
 
-    # # Step 1: Extract features from labeled data
-    # labeled_features = []
-    # labeled_labels = []
-    # for batch, labels in data_loader:
-    #     with torch.no_grad():
-    #         features = model(batch)
-    #     labeled_features.append(features)
-    #     labeled_labels.append(labels)
-    # labeled_features = torch.cat(labeled_features)
-    # labeled_labels = torch.cat(labeled_labels)
+def validation(model, dataset):
+    validation_loader = DataLoader(dataset, batch_size=32, shuffle=False)
+    criterion = nn.CrossEntropyLoss()   
+    
+    model.eval()
 
-    # # Step 2: Apply K-means on labeled data
-    # kmeans = apply_kmeans(labeled_features.numpy(), len(label_mapping))
-    # cluster_centers = torch.tensor(kmeans.cluster_centers_, dtype=torch.float32)
+    validation_loss = 0.0
+    all_labels = []
+    all_preds = []
 
-    # # Step 3: Adjust with unlabeled data
-    # unlabeled_data = torch.randn(50, 1, 160)  # Simulated unlabeled data
-    # unlabeled_features = model(unlabeled_data)
+    with torch.no_grad():
+        for data in validation_loader:
+            inputs, labels = data
+            features, outputs = model(inputs)
+            loss = criterion(outputs, labels)  # Define sua função de perda
+            
+            validation_loss += loss.item() * inputs.size(0)
+            
+            _, preds = torch.max(outputs, 1)  # Para problemas de classificação
+            all_labels.extend(labels.numpy())
+            all_preds.extend(preds.numpy())
 
-    # Calculate KL-divergence loss
-    # loss = kl_divergence_loss(labeled_features, cluster_centers)
-    # print("KL-divergence loss:", loss.item())
+    # Calcula a perda média
+    validation_loss = validation_loss / len(validation_loader.dataset)
+
+    # Calcula a acurácia
+    accuracy = accuracy_score(all_labels, all_preds)
+
+    print(f'Validation Loss: {validation_loss:.4f}')
+    print(f'Validation Accuracy: {accuracy:.4f}')  
+
+    # Exibir a matriz de confusão usando matplotlib
+    print(confusion_matrix(all_labels, all_preds))
+
+    return accuracy
+
+# def baseline():
+#     sample_size = 100_000
+#     data_filter = load_yaml('config/filters_config.yaml')["CWRU"]
+#     ds_test = PtDataset(data_filter, sample_size, apply_augmentation=False)
+#     print(f"Total test samples: {len(ds_test)}")            
+#     ds_train = PtDataset({**data_filter, "extent_damage": [el[1] for el in att_train]}, sample_size, apply_augmentation=False),
+#         PtDataset({**data_filter, "hp": [el[0] for el in att_train], "label": "N"}, sample_size, apply_augmentation=False),
+#         # PtDataset({**data_filter, "extent_damage": [el[1] for el in att_train]}, sample_size, apply_augmentation=True),
+#         # PtDataset({**data_filter, "hp": [el[0] for el in att_train], "label": "N"}, sample_size, apply_augmentation=True)
+#         ])
+#     print(f"Total train samples: {len(ds_train)}")
+#     dl_train = DataLoader(ds_train, batch_size=32, shuffle=True)
+#     model.load_state_dict(torch.load("initial_weights.pth", weights_only=False))
+#     train_model(dl_train, model, n_epochs=n_epochs, learning_rate=0.0001)
+#     accuracy = validation(model, ds_test)
+
+def kfold(model, n_epochs=100, repetition=10):
+    total_accuracies = []
+    for rep in range(repetition):
+        accuracies = []
+        print(f"Repetition: {rep+1}")
+        sample_size = 12000
+        dataset_name = "CWRU"
+        label_mapping = {"N": 0, "I": 1, "O": 2, "B": 3}
+        n_class = len(label_mapping)
+
+        data_filter = load_yaml('config/filters_config.yaml')[dataset_name]
+        attributes = [("0", "007"), ("1", "014"), ("2", "021")]
+        for att in attributes:
+            att_test = att
+            att_train = [el for el in attributes if el[1] != att[1]]
+            
+            print("Test")
+            ds_test = ConcatDataset(
+                [PtDataset({**data_filter, "extent_damage": att_test[1]}, sample_size, apply_augmentation=False),
+                # PtDataset({**data_filter, "hp": att_test[0], "label": "N"}, sample_size, apply_augmentation=False)
+                ])
+            print(f"Total test samples: {len(ds_test)}")
+            
+            print("Train")
+            ds_train = ConcatDataset([
+                PtDataset({**data_filter, "extent_damage": [el[1] for el in att_train]}, sample_size, apply_augmentation=False),
+                # PtDataset({**data_filter, "hp": [el[0] for el in att_train], "label": "N"}, sample_size, apply_augmentation=False),
+                # PtDataset({**data_filter, "extent_damage": [el[1] for el in att_train]}, sample_size, apply_augmentation=True),
+                # PtDataset({**data_filter, "hp": [el[0] for el in att_train], "label": "N"}, sample_size, apply_augmentation=True)
+                ])
+            print(f"Total train samples: {len(ds_train)}")
+            dl_train = DataLoader(ds_train, batch_size=32, shuffle=True)
+            model.load_state_dict(torch.load("initial_weights.pth", weights_only=False))
+            train_model(dl_train, model, n_epochs=n_epochs, learning_rate=0.0001)
+            accuracy = validation(model, ds_test)
+            accuracies.append(accuracy)
+            print(f"accuracies: {accuracies}")
+        total_accuracies.append(accuracies)
+        print(f"total_accuracy: {total_accuracies}")
+    total_accuracies = np.array(total_accuracies)
+    print(f"shape total accuracy: {total_accuracies.shape}")
+    total = np.mean(total_accuracies)
+    print(f"Total: {np.round(total, 2)}")
+    print(f"Accuracy per fold: {np.mean(total_accuracies, axis=0)}")
+if __name__ == '__main__':
+    sys.stdout = LoggerWriter(logging.info, "kfold_mitigated_with_da")
+    
+    # download()   
+    
+    # Parameters
+    n_epochs = 50
+    repetitions = 1
+    
+    # Experimenter
+    model = SignalFeatureCNN1D()
+    torch.save(model.state_dict(), "initial_weights.pth")
+
+    kfold(model, n_epochs=n_epochs, repetition=repetitions)

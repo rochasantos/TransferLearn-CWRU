@@ -1,5 +1,6 @@
 import logging
 import sys
+import os
 from datetime import datetime
 
 def generate_filename(name="result"):
@@ -10,6 +11,9 @@ class LoggerWriter:
     def __init__(self, level, name="result"):
         self.level = level
         # Gera o nome do arquivo com base no parâmetro name
+        if not os.path.exists("results"):
+            os.mkdir("results")
+        
         output_file = generate_filename(name)
         
         # Configura o logger para escrever no arquivo especificado e no console
