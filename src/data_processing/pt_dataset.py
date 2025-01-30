@@ -4,24 +4,14 @@ import torch
 from torch.utils.data import Dataset
 from utils.get_dataset import get_dataset
 from src.data_augmentation import DataAugmentation
-from functools import partial
-
-class TransformPipeline:
-
-    def __init__(self, transforms):       
-        self.transforms = transforms
-
-    def __call__(self, signal):        
-        for transform in self.transforms:
-            signal = transform(signal)
-        return signal
-    
+from functools import partial 
 
 class PtDataset(Dataset):
 
-    def __init__(self, data_filter, sample_size=120_000, apply_augmentation=False,
-                 label_mapping = {"N": 0, "I": 1, "O": 2, "B": 3}):
+    def __init__(self, data_filter, sample_size=120_000, transient_impulse_size = 540,  apply_augmentation=False,
+                 label_mapping = {"I": 0, "O": 1, "B": 2}):
         self.apply_augmentation = apply_augmentation
+        self.transient_impulse_size = transient_impulse_size
         data = []
         labels = []
         # metainfo
@@ -56,12 +46,12 @@ class PtDataset(Dataset):
         if self.apply_augmentation:
             # Randomly select an augmentation strategy
             augmentation_method = np.random.choice([
-                partial(DataAugmentation.local_data_reversing, segment_length=100),
-                partial(DataAugmentation.local_random_reversing, segment_length=100),
+                partial(DataAugmentation.local_data_reversing, segment_length=self.transient_impulse_size),
+                partial(DataAugmentation.local_random_reversing, segment_length=self.transient_impulse_size),
                 DataAugmentation.global_data_reversing,
-                partial(DataAugmentation.local_data_zooming, zoom_range=(0.8, 1.2), segment_length=100),
+                partial(DataAugmentation.local_data_zooming, zoom_range=(0.8, 1.2), segment_length=self.transient_impulse_size),
                 partial(DataAugmentation.global_data_zooming, zoom_range=(0.8, 1.2)),
-                partial(DataAugmentation.local_segment_splicing, segment_length=100),
+                partial(DataAugmentation.local_segment_splicing, segment_length=self.transient_impulse_size),
                 partial(DataAugmentation.noise_addition, snr_db=20),
             ])
         

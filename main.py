@@ -13,7 +13,7 @@ from utils import LoggerWriter
 
 # from utils.download_rawfile import download_rawfile
 from utils import load_yaml
-from src.data_processing import PtDataset, TransformPipeline
+from src.data_processing import PtDataset
 
 
 # DOWNLOAD RAW FILES
@@ -37,8 +37,8 @@ class TripletLoss(nn.Module):
         return loss.mean()
     
 
-def train_model(dataloader, model, n_epochs=100, learning_rate=0.0001, save_path=None):
-    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+def train_model(dataloader, model, n_epochs=100, learning_rate=0.0001, with_triplet_loss=False, save_path=None):
+    optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=learning_rate)
     cross_entropy_loss = nn.CrossEntropyLoss()
     triplet_loss_fn = TripletLoss(margin=1.0)
 
@@ -67,7 +67,10 @@ def train_model(dataloader, model, n_epochs=100, learning_rate=0.0001, save_path
             triplet_loss = triplet_loss_fn(anchor, positive, negative)
 
             # Combine losses
-            loss = ce_loss + triplet_loss
+            if with_triplet_loss:
+                loss = ce_loss + triplet_loss
+            else:
+                loss = ce_loss
 
             # Backward pass and optimization
             optimizer.zero_grad()
@@ -86,7 +89,7 @@ def train_model(dataloader, model, n_epochs=100, learning_rate=0.0001, save_path
 
 
 def validation(model, dataset):
-    validation_loader = DataLoader(dataset, batch_size=32, shuffle=False)
+    dataloader = DataLoader(dataset, batch_size=32, shuffle=False)
     criterion = nn.CrossEntropyLoss()   
     
     model.eval()
@@ -96,7 +99,7 @@ def validation(model, dataset):
     all_preds = []
 
     with torch.no_grad():
-        for data in validation_loader:
+        for data in dataloader:
             inputs, labels = data
             features, outputs = model(inputs)
             loss = criterion(outputs, labels)  # Define sua função de perda
@@ -107,70 +110,74 @@ def validation(model, dataset):
             all_labels.extend(labels.numpy())
             all_preds.extend(preds.numpy())
 
-    # Calcula a perda média
-    validation_loss = validation_loss / len(validation_loader.dataset)
-
-    # Calcula a acurácia
     accuracy = accuracy_score(all_labels, all_preds)
+    print(f'Accuracy: {accuracy:.4f}')  
 
-    print(f'Validation Loss: {validation_loss:.4f}')
-    print(f'Validation Accuracy: {accuracy:.4f}')  
-
-    # Exibir a matriz de confusão usando matplotlib
     print(confusion_matrix(all_labels, all_preds))
 
     return accuracy
 
-# def baseline():
-#     sample_size = 100_000
-#     data_filter = load_yaml('config/filters_config.yaml')["CWRU"]
-#     ds_test = PtDataset(data_filter, sample_size, apply_augmentation=False)
-#     print(f"Total test samples: {len(ds_test)}")            
-#     ds_train = PtDataset({**data_filter, "extent_damage": [el[1] for el in att_train]}, sample_size, apply_augmentation=False),
-#         PtDataset({**data_filter, "hp": [el[0] for el in att_train], "label": "N"}, sample_size, apply_augmentation=False),
-#         # PtDataset({**data_filter, "extent_damage": [el[1] for el in att_train]}, sample_size, apply_augmentation=True),
-#         # PtDataset({**data_filter, "hp": [el[0] for el in att_train], "label": "N"}, sample_size, apply_augmentation=True)
-#         ])
-#     print(f"Total train samples: {len(ds_train)}")
-#     dl_train = DataLoader(ds_train, batch_size=32, shuffle=True)
-#     model.load_state_dict(torch.load("initial_weights.pth", weights_only=False))
-#     train_model(dl_train, model, n_epochs=n_epochs, learning_rate=0.0001)
-#     accuracy = validation(model, ds_test)
 
-def kfold(model, n_epochs=100, repetition=10):
+def baseline(sample_size=12000, n_epochs=100):
+    
+    model = SignalFeatureCNN1D(sample_size)
+    torch.save(model.state_dict(), "initial_weights.pth")
+
+    data_filter = load_yaml('config/filters_config.yaml')["CWRU"]
+    
+    ds_train = ConcatDataset([
+        # PtDataset(data_filter, sample_size, apply_augmentation=True),
+        PtDataset(data_filter, sample_size, apply_augmentation=True)
+    ])
+    ds_test = PtDataset(data_filter, sample_size, apply_augmentation=False)
+    
+    dataloader_tr = DataLoader(ds_train, batch_size=32, shuffle=True)
+
+    train_model(dataloader_tr, model, n_epochs=150, with_triplet_loss=True, learning_rate=0.0001)    
+    model.freeze_layers(["conv1", "conv2"])
+    train_model(
+        DataLoader(PtDataset(data_filter, sample_size, apply_augmentation=False), batch_size=32, shuffle=True),
+        model, n_epochs=n_epochs, with_triplet_loss=False, learning_rate=0.0001
+    )           
+    accuracy = validation(model, ds_test)
+    print(f"Accuracy: {accuracy}")
+
+
+def kfold(sample_size=12000, n_epochs=100, with_augmentation=False, repetition=10):
+
+    model = SignalFeatureCNN1D(sample_size)
+    torch.save(model.state_dict(), "initial_weights.pth")
+
     total_accuracies = []
     for rep in range(repetition):
         accuracies = []
         print(f"Repetition: {rep+1}")
         sample_size = 12000
         dataset_name = "CWRU"
-        label_mapping = {"N": 0, "I": 1, "O": 2, "B": 3}
-        n_class = len(label_mapping)
-
         data_filter = load_yaml('config/filters_config.yaml')[dataset_name]
-        attributes = [("0", "007"), ("1", "014"), ("2", "021")]
-        for att in attributes:
-            att_test = att
-            att_train = [el for el in attributes if el[1] != att[1]]
-            
-            print("Test")
-            ds_test = ConcatDataset(
-                [PtDataset({**data_filter, "extent_damage": att_test[1]}, sample_size, apply_augmentation=False),
-                # PtDataset({**data_filter, "hp": att_test[0], "label": "N"}, sample_size, apply_augmentation=False)
+
+        attributes = ["007", "014", "021"]
+        for att_test in attributes:
+            ds_test = PtDataset({**data_filter, "extent_damage": att_test}, sample_size, apply_augmentation=False)
+            att_train = [el for el in attributes if el != att_test]
+            if with_augmentation:
+                ds_train = ConcatDataset([
+                    PtDataset({**data_filter, "extent_damage": [el for el in att_train]}, sample_size, apply_augmentation=False),
+                    PtDataset({**data_filter, "extent_damage": [el for el in att_train]}, sample_size, apply_augmentation=True)
                 ])
+            else:
+                ds_train = PtDataset({**data_filter, "extent_damage": [el for el in att_train]}, sample_size=sample_size, apply_augmentation=False)
+
+            print({**data_filter, "extent_damage": att_test})
             print(f"Total test samples: {len(ds_test)}")
-            
-            print("Train")
-            ds_train = ConcatDataset([
-                PtDataset({**data_filter, "extent_damage": [el[1] for el in att_train]}, sample_size, apply_augmentation=False),
-                # PtDataset({**data_filter, "hp": [el[0] for el in att_train], "label": "N"}, sample_size, apply_augmentation=False),
-                # PtDataset({**data_filter, "extent_damage": [el[1] for el in att_train]}, sample_size, apply_augmentation=True),
-                # PtDataset({**data_filter, "hp": [el[0] for el in att_train], "label": "N"}, sample_size, apply_augmentation=True)
-                ])
             print(f"Total train samples: {len(ds_train)}")
+            
             dl_train = DataLoader(ds_train, batch_size=32, shuffle=True)
+            
             model.load_state_dict(torch.load("initial_weights.pth", weights_only=False))
+            
             train_model(dl_train, model, n_epochs=n_epochs, learning_rate=0.0001)
+            
             accuracy = validation(model, ds_test)
             accuracies.append(accuracy)
             print(f"accuracies: {accuracies}")
@@ -181,17 +188,20 @@ def kfold(model, n_epochs=100, repetition=10):
     total = np.mean(total_accuracies)
     print(f"Total: {np.round(total, 2)}")
     print(f"Accuracy per fold: {np.mean(total_accuracies, axis=0)}")
+
+
+
 if __name__ == '__main__':
-    sys.stdout = LoggerWriter(logging.info, "kfold_mitigated_with_da")
-    
-    # download()   
-    
+    # download()
+   
     # Parameters
     n_epochs = 50
-    repetitions = 1
-    
-    # Experimenter
-    model = SignalFeatureCNN1D()
-    torch.save(model.state_dict(), "initial_weights.pth")
+    repetitions = 5
+    sample_size = 12000
+    log_path = "kfold_mitigated_withou_da"
 
-    kfold(model, n_epochs=n_epochs, repetition=repetitions)
+    sys.stdout = LoggerWriter(logging.info, log_path)
+
+    # Experimenter
+    # kfold(sample_size=sample_size, n_epochs=n_epochs, with_augmentation=False, repetition=repetitions)
+    baseline(sample_size=sample_size, n_epochs=n_epochs)
